@@ -26,7 +26,7 @@
 		</a>
 	</div>
    
-**Local Cascade Ensemble (LCE)** is a *high-performing*, *scalable* and *user-friendly* machine learning method for the general tasks of **classification** and **regression**.
+| **Local Cascade Ensemble (LCE)** is a *high-performing*, *scalable* and *user-friendly* machine learning method for the general tasks of **classification** and **regression**.
 | In particular, LCE:
  
 - Enhances the prediction performance of Random Forest and XGBoost by combining their strengths and adopting a complementary diversification approach
