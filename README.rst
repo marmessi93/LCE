@@ -21,22 +21,27 @@
 		<a href="https://github.com/psf/black">	
 			<img src="https://img.shields.io/badge/code%20style-black-000000.svg">
 		</a>
-		<a href="https://doi.org/10.1007/s10618-022-00823-6">		
-			<img src="https://zenodo.org/badge/DOI/10.1007/s10618-022-00823-6.svg">
-		</a>
 		<a href="https://pypi.python.org/pypi/lcensemble/">		
 			<img src="https://img.shields.io/github/license/LocalCascadeEnsemble/LCE.svg">
 		</a>
 	</div>
    
+**Local Cascade Ensemble (LCE)** is a *high-performing*, *scalable* and *user-friendly* machine learning method for the general tasks of **classification** and **regression**.
+In particular, LCE:
+ 
+- Enhances the prediction performance of Random Forest and XGBoost by combining their strengths and adopting a complementary diversification approach
+- Supports parallel processing to ensure scalability
+- Handles missing data by design
+- Adopts scikit-learn API for the ease of use
+- Adheres to scikit-learn conventions to allow interaction with scikit-learn pipelines and model selection tools
+- Is released in open source and commercially usable - Apache 2.0 license
 
-**Local Cascade Ensemble (LCE)** is a machine learning method that **further enhances** the prediction performance of the state-of-the-art **Random Forest** and **XGBoost**. LCE combines their strengths and adopts a complementary diversification approach to obtain a better generalizing predictor. Specifically, LCE is a hybrid ensemble method that combines an explicit boosting-bagging approach to handle the bias-variance trade-off faced by machine learning models and an implicit divide-and-conquer approach to individualize classifier errors on different parts of the training data. LCE has been evaluated on a public benchmark and published in the journal *Data Mining and Knowledge Discovery*.
-
-LCE package is **compatible with scikit-learn**; it passes the `check_estimator <https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html#sklearn.utils.estimator_checks.check_estimator>`_. Therefore, it can interact with scikit-learn pipelines and model selection tools.
-
+A tutorial introducing LCE and illustrative code examples has been published in `Towards Data Science <https://towardsdatascience.com/random-forest-or-xgboost-it-is-time-to-explore-lce-2fed913eafb8?source=friends_link&sk=8cba14ad36f7662d07e842d03944a316>`_.
 
 Getting Started
 ===============
+
+This section presents a quick start tutorial showing snippets for you to try out LCE.
 
 Installation
 ------------
@@ -79,21 +84,12 @@ LCEClassifier prediction on an Iris test set:
 Documentation
 =============
 
-LCE documentation can be found `here <https://lce.readthedocs.io/en/latest/>`_.
+LCE documentation, including API documentation and general examples, can be found `here <https://lce.readthedocs.io/en/latest/>`_.
 
 
 Reference
 =========
 
-The full information about LCE can be found in the associated `journal paper <https://hal.inria.fr/hal-03599214/document>`_.
-If you use the package, please cite us with the following BibTex::
+The full information about LCE design and evaluation can be found in the associated `journal paper <https://hal.inria.fr/hal-03599214/document>`_:
 
-	@article{Fauvel22-LCE,
-	  author = {Fauvel, K. and E. Fromont and V. Masson and P. Faverdin and A. Termier},
-	  title = {{XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification}},
-	  journal = {Data Mining and Knowledge Discovery},
-	  year = {2022},
-	  volume = {36},
-	  number = {3},
-	  pages = {917-957}
-	}
+.. [1] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. "XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification", Data Mining and Knowledge Discovery, 36(3):917–957, 2022
