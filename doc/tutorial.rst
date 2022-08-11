@@ -277,11 +277,11 @@ Python Source Files
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="An example of lce.LCEClassifier">
+    <div class="sphx-glr-thumbcontainer" tooltip="LCEClassifier on Iris Dataset">
 
 .. only:: html
 
- .. figure:: /_images/logo_lce.svg
+ .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCEClassifier on Iris dataset
 
      :ref:`sphx_glr_auto_examples_lceclassifier_iris.py`
@@ -299,11 +299,11 @@ Python Source Files
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="An example of lce.LCEClassifier">
+    <div class="sphx-glr-thumbcontainer" tooltip="LCEClassifier on Iris Dataset with scikit-learn cross validation score">
 
 .. only:: html
 
- .. figure:: /_images/logo_lce.svg
+ .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCEClassifier on Iris dataset with scikit-learn cross validation score
 
      :ref:`sphx_glr_auto_examples_lceclassifier_iris_cv.py`
@@ -325,7 +325,7 @@ Python Source Files
 
 .. only:: html
 
- .. figure:: /_images/logo_lce.svg
+ .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCEClassifier on Iris dataset with missing values
 
      :ref:`sphx_glr_auto_examples_lceclassifier_missing_iris.py`
@@ -348,7 +348,7 @@ Python Source Files
 
 .. only:: html
 
- .. figure:: /_images/logo_lce.svg
+ .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCERegressor on Diabetes dataset
 
      :ref:`sphx_glr_auto_examples_lceregressor_diabetes.py`
@@ -370,7 +370,7 @@ Python Source Files
 
 .. only:: html
 
- .. figure:: /_images/logo_lce.svg
+ .. figure:: ./doc/_images/logo_lce.svg
      :alt: 5. LCERegressor on Diabetes dataset with scikit-learn hyperparameter grid search
 
      :ref:`sphx_glr_auto_examples_lceregressor_diabetes_gridsearchcv.py`
