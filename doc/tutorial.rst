@@ -32,7 +32,7 @@ The following Figure illustrates the difference between bagging and boosting met
 .. raw:: html
 
 	<p align="center">
-		<img src="./_images/Figure_BaggingvsBoosting.png" width="90%">	
+		<img src="../../_images/Figure_BaggingvsBoosting.png" width="90%">	
 	</p>
 
 LCE 
@@ -43,7 +43,7 @@ LCE is represented in the following Figure.
 .. raw:: html
 
 	<p align="center">
-		<img src="./_images/Figure_LCE.png" width="90%">	
+		<img src="../../_images/Figure_LCE.png" width="90%">	
 	</p>
 
 
@@ -284,6 +284,8 @@ Python Source Files
  .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCEClassifier on Iris dataset
 
+     :ref:`sphx_glr_auto_examples_lceclassifier_iris.py`
+
 .. raw:: html
 
     </div>
@@ -304,6 +306,7 @@ Python Source Files
  .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCEClassifier on Iris dataset with scikit-learn cross validation score
 
+     :ref:`sphx_glr_auto_examples_lceclassifier_iris_cv.py`
 
 .. raw:: html
 
@@ -324,6 +327,8 @@ Python Source Files
 
  .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCEClassifier on Iris dataset with missing values
+
+     :ref:`sphx_glr_auto_examples_lceclassifier_missing_iris.py`
 
 .. raw:: html
 
@@ -346,6 +351,7 @@ Python Source Files
  .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCERegressor on Diabetes dataset
 
+     :ref:`sphx_glr_auto_examples_lceregressor_diabetes.py`
 
 .. raw:: html
 
@@ -367,6 +373,7 @@ Python Source Files
  .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCERegressor on Diabetes dataset with scikit-learn hyperparameter grid search
 
+     :ref:`sphx_glr_auto_examples_lceregressor_diabetes_gridsearchcv.py`
 
 .. raw:: html
 
