@@ -32,7 +32,7 @@ The following Figure illustrates the difference between bagging and boosting met
 .. raw:: html
 
 	<p align="center">
-		<img src="../../_images/Figure_BaggingvsBoosting.png" width="90%">	
+		<img src="./_images/Figure_BaggingvsBoosting.png" width="90%">	
 	</p>
 
 LCE 
@@ -43,7 +43,7 @@ LCE is represented in the following Figure.
 .. raw:: html
 
 	<p align="center">
-		<img src="../../_images/Figure_LCE.png" width="90%">	
+		<img src="./_images/Figure_LCE.png" width="90%">	
 	</p>
 
 
