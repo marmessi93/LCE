@@ -32,7 +32,7 @@ The following Figure illustrates the difference between bagging and boosting met
 .. raw:: html
 
 	<p align="center">
-		<img src="./_images/Figure_BaggingvsBoosting.png" width="90%">	
+		<img src="./doc/_images/Figure_BaggingvsBoosting.png" width="90%">	
 	</p>
 
 LCE 
@@ -43,7 +43,7 @@ LCE is represented in the following Figure.
 .. raw:: html
 
 	<p align="center">
-		<img src="./_images/Figure_LCE.png" width="90%">	
+		<img src="./doc/_images/Figure_LCE.png" width="90%">	
 	</p>
 
 
@@ -321,7 +321,7 @@ Python Source Files
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="An example of lce.LCEClassifier">
+    <div class="sphx-glr-thumbcontainer" tooltip="LCEClassifier with missing values">
 
 .. only:: html
 
@@ -344,7 +344,7 @@ Python Source Files
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="An example of lce.LCERegressor">
+    <div class="sphx-glr-thumbcontainer" tooltip="LCERegressor on Diabetes Dataset">
 
 .. only:: html
 
@@ -366,7 +366,7 @@ Python Source Files
    
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="An example of lce.LCERegressor">
+    <div class="sphx-glr-thumbcontainer" tooltip="LCERegressor on Diabetes Dataset with scikit-learn hyperparameter grid search">
 
 .. only:: html
 
