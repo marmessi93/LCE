@@ -284,8 +284,6 @@ Python Source Files
  .. figure:: ./doc/_images/logo_lce.svg
      :alt: LCEClassifier on Iris dataset
 
-     :ref:`sphx_glr_auto_examples_lceclassifier_iris.py`
-
 .. raw:: html
 
     </div>
@@ -371,7 +369,7 @@ Python Source Files
 .. only:: html
 
  .. figure:: ./doc/_images/logo_lce.svg
-     :alt: 5. LCERegressor on Diabetes dataset with scikit-learn hyperparameter grid search
+     :alt: LCERegressor on Diabetes dataset with scikit-learn hyperparameter grid search
 
      :ref:`sphx_glr_auto_examples_lceregressor_diabetes_gridsearchcv.py`
 
