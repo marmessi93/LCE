@@ -1,0 +1,12 @@
+name: Documentation Improvement
+description: Create a report to help improve the documentation. Alternatively you can just open a pull request with the suggested change.
+
+body:
+- type: textarea
+  attributes:
+    label: Describe the issue
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Explain the improvement

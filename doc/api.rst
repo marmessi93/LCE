@@ -1,6 +1,8 @@
-####################
+#############
 API
-####################
+#############
+
+.. _APIDocumentation:
 
 This is the API documentation of LCE.
 

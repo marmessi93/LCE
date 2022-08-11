@@ -1,10 +1,8 @@
-#####################################
+#############
 Citation
-#####################################
+#############
 
-
-The full information about LCE can be found in the associated `journal paper <https://hal.inria.fr/hal-03599214/document>`_.
-If you use the package, please cite us with the following BibTex::
+The full information about LCE design and evaluation can be found in the associated `journal paper <https://hal.inria.fr/hal-03599214/document>`_::
 
 	@article{Fauvel22-LCE,
 	  author = {Fauvel, K. and E. Fromont and V. Masson and P. Faverdin and A. Termier},

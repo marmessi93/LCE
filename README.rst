@@ -26,7 +26,7 @@
 		</a>
 	</div>
    
-| **Local Cascade Ensemble (LCE)** is a *high-performing*, *scalable* and *user-friendly* machine learning method for the general tasks of **classification** and **regression**.
+| **Local Cascade Ensemble (LCE)** is a *high-performing*, *scalable* and *user-friendly* machine learning method for the general tasks of **Classification** and **Regression**.
 | In particular, LCE:
  
 - Enhances the prediction performance of Random Forest and XGBoost by combining their strengths and adopting a complementary diversification approach
@@ -78,7 +78,12 @@ LCEClassifier prediction on an Iris test set:
 
 	# Make prediction and generate classification report
 	y_pred = clf.predict(X_test)
-	print(classification_report(y_test, y_pred))
+	accuracy = accuracy_score(y_test, y_pred)
+	print("Accuracy: {:.1f}%".format(accuracy*100))
+	
+.. code-block::
+	
+	Accuracy: 97.4%
 
 
 Documentation
@@ -92,4 +97,4 @@ Reference
 
 The full information about LCE design and evaluation can be found in the associated `journal paper <https://hal.inria.fr/hal-03599214/document>`_:
 
-.. [1] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. "XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification", Data Mining and Knowledge Discovery, 36(3):917–957, 2022
+.. [1] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
