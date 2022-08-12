@@ -76,7 +76,7 @@ LCEClassifier prediction on an Iris test set:
 	clf = LCEClassifier(n_jobs=-1, random_state=0)
 	clf.fit(X_train, y_train)
 
-	# Make prediction and generate classification report
+	# Make prediction and compute accuracy score
 	y_pred = clf.predict(X_test)
 	accuracy = accuracy_score(y_test, y_pred)
 	print("Accuracy: {:.1f}%".format(accuracy*100))

@@ -1,6 +1,6 @@
 """
 ======================================================================
-2. LCEClassifier on Iris dataset with scikit-learn cross validation score
+LCEClassifier on Iris dataset with scikit-learn cross validation score
 ======================================================================
 
 An example of :class:`lce.LCEClassifier`

@@ -8,7 +8,7 @@ An example of :class:`lce.LCEClassifier`
 
 from lce import LCEClassifier
 from sklearn.datasets import load_iris
-from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 
@@ -20,6 +20,7 @@ X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, rand
 clf = LCEClassifier(n_jobs=-1, random_state=0)
 clf.fit(X_train, y_train)
 
-# Make prediction and generate classification report
+# Make prediction and compute accuracy score
 y_pred = clf.predict(X_test)
-print(classification_report(y_test, y_pred))
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy: {:.1f}%".format(accuracy*100))

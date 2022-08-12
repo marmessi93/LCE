@@ -29,22 +29,18 @@ After a weak learner is added, the data weights are readjusted, allowing future 
 The current state-of-the-art method that uses boosting is XGBoost [4]_. 
 The following Figure illustrates the difference between bagging and boosting methods.
 
-.. raw:: html
 
-	<p align="center">
-		<img src="_images/Figure_BaggingvsBoosting.png" width="90%">	
-	</p>
+.. image:: _images/Figure_BaggingvsBoosting.png
+   :width: 90%
+  
 
 LCE 
 ---
 LCE combines a boosting-bagging approach to handle the bias-variance trade-off faced by machine learning models; in addition, it adopts a divide-and-conquer approach to individualize predictor errors on different parts of the training data. 
 LCE is represented in the following Figure.
 
-.. raw:: html
-
-	<p align="center">
-		<img src="_images/Figure_LCE.png" width="90%">	
-	</p>
+.. image:: _images/Figure_LCE.png
+   :width: 90%
 
 
 Specifically, LCE is based on cascade generalization: it uses a set of predictors sequentially, and adds new attributes to the input dataset at each stage. 
@@ -107,7 +103,7 @@ Code Examples
 =============
 
 The following examples illustrate the use of LCE on public datasets for a classification and a regression task.
-They also demonstrates the compatibility of LCE with scikit-learn model pipelines and selection tools through the use of ``cross_val_score`` and ``GridSearchCV``.
+They also demonstrate the compatibility of LCE with scikit-learn pipelines and model selection tools through the use of ``cross_val_score`` and ``GridSearchCV``.
 An example of LCE on a dataset including missing values is also shown.
 
 Classification
@@ -119,7 +115,7 @@ Classification
 
 	from lce import LCEClassifier
 	from sklearn.datasets import load_iris
-	from sklearn.metrics import classification_report
+	from sklearn.metrics import accuracy_score
 	from sklearn.model_selection import train_test_split
 
 

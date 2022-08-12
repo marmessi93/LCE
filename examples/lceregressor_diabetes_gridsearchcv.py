@@ -1,6 +1,6 @@
 """
 ================================================================================
-5. LCERegressor on Diabetes dataset with scikit-learn hyperparameter grid search
+LCERegressor on Diabetes dataset with scikit-learn hyperparameter grid search
 ================================================================================
 
 An example of :class:`lce.LCERegressor`
