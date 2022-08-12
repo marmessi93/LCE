@@ -64,7 +64,7 @@ LCEClassifier prediction on an Iris test set:
 
 	from lce import LCEClassifier
 	from sklearn.datasets import load_iris
-	from sklearn.metrics import classification_report
+	from sklearn.metrics import accuracy_score
 	from sklearn.model_selection import train_test_split
 
 

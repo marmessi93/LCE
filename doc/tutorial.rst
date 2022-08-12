@@ -32,6 +32,7 @@ The following Figure illustrates the difference between bagging and boosting met
 
 .. image:: _images/Figure_BaggingvsBoosting.png
    :width: 90%
+   :align: center
   
 
 LCE 
@@ -41,6 +42,7 @@ LCE is represented in the following Figure.
 
 .. image:: _images/Figure_LCE.png
    :width: 90%
+   :align: center
 
 
 Specifically, LCE is based on cascade generalization: it uses a set of predictors sequentially, and adds new attributes to the input dataset at each stage. 
