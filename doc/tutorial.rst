@@ -11,7 +11,7 @@ The construction of an ensemble method involves combining accurate and diverse i
 There are **two complementary ways** to generate diverse predictors: *(i)* by **changing the training data distribution** and *(ii)* by **learning different parts of the training data**.
 
 **LCE adopts these two diversification approaches.** 
-First, *(i)* LCE combines the two well-known methods that modify the distribution of the original training data with complementary effects on the bias-variance trade-off: bagging [1]_ (variance reduction) and boosting [2]_ (bias reduction). 
+First, *(i)* LCE combines the two well-known methods that modify the distribution of the original training data with complementary effects on the bias-variance trade-off: bagging [2]_ (variance reduction) and boosting [8]_ (bias reduction). 
 Then, *(ii)* LCE learns different parts of the training data to capture new relationships that cannot be discovered globally based on a divide-and-conquer strategy (a decision tree). 
 Before detailing how LCE combines these methods, we introduce the key concepts behind them that will be used in the explanation of LCE.
 
@@ -67,27 +67,26 @@ Hyperparameters
 ---------------
 The hyperparameters of LCE are the classical ones in tree-based learning (e.g., ``max_depth``, ``max_features``, ``n_estimators``). 
 Moreover, LCE learns a specific XGBoost model at each node of a tree, and it only requires the ranges of XGBoost hyperparameters to be specified. 
-Then, the hyperparameters of each XGBoost model are automatically set by Hyperopt [5]_, a sequential model-based optimization using a tree of Parzen estimators algorithm. 
+Then, the hyperparameters of each XGBoost model are automatically set by Hyperopt [1]_, a sequential model-based optimization using a tree of Parzen estimators algorithm. 
 Hyperopt chooses the next hyperparameters from both the previous choices and a tree-based optimization algorithm. 
-Tree of Parzen estimators meet or exceed grid search and random search performance for hyperparameters setting. 
+Tree of Parzen estimators meets or exceeds grid search and random search performance for hyperparameters setting. 
 The full list of LCE hyperparameters is available in its :ref:`API documentation <APIDocumentation>`.
 
 Published Results
 -----------------
-LCE has been initially designed for a specific application in [6]_, and then evaluated it on the public UCI datasets [7]_ in [8]_. 
+LCE has been initially designed for a specific application in [6]_, and then evaluated on the public UCI datasets [5]_ in [7]_. 
 Results show that LCE obtains on average a better prediction performance than the state-of-the-art classifiers, including Random Forest and XGBoost.
 
 References
 ----------
-.. [1] Breiman, L. Bagging Predictors. Machine Learning, 24(2):123–140, 1996
-.. [2] Schapire, R. The Strength of Weak Learnability. Machine Learning, 5(2):197–227, 1990
+.. [1] Bergstra, J., R. Bardenet, Y. Bengio and B. Kégl. Algorithms for Hyper-Parameter Optimization. In Proceedings of the 24th International Conference on Neural Information Processing Systems, 2011
+.. [2] Breiman, L. Bagging Predictors. Machine Learning, 24(2):123–140, 1996
 .. [3] Breiman, L. Random Forests. Machine Learning, 45(1):5–32, 2001
 .. [4] Chen, T. and C. Guestrin. XGBoost: A Scalable Tree Boosting System. In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 2016
-.. [5] Bergstra, J., R. Bardenet, Y. Bengio and B. Kégl. Algorithms for Hyper-Parameter Optimization. In Proceedings of the 24th International Conference on Neural Information Processing Systems, 2011
+.. [5] Dua, D. and C. Graff. UCI Machine Learning Repository, 2017
 .. [6] Fauvel, K., V. Masson, E. Fromont, P. Faverdin and A. Termier. Towards Sustainable Dairy Management - A Machine Learning Enhanced Method for Estrus Detection. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 2019
-.. [7] Dua, D. and C. Graff. UCI Machine Learning Repository, 2017
-.. [8] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
-
+.. [7] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
+.. [8] Schapire, R. The Strength of Weak Learnability. Machine Learning, 5(2):197–227, 1990
 
 Installation
 ============
