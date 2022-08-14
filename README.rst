@@ -58,7 +58,7 @@ Or ``conda``::
 First Example on Iris Dataset
 -----------------------------
 
-LCEClassifier prediction on an Iris test set:
+LCEClassifier accuracy on an Iris test set:
 
 .. code-block:: python
 
@@ -98,3 +98,8 @@ Reference
 The full information about LCE design and evaluation can be found in the associated `journal paper <https://hal.inria.fr/hal-03599214/document>`_:
 
 .. [1] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
+
+
+Contact
+=======
+If you have any questions, you can contact me here: `Kevin Fauvel <https://www.linkedin.com/in/kevin-fauvel-phd-cfa-caia-51b7777a/>`_.
