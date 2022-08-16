@@ -104,7 +104,7 @@ Code Examples
 =============
 
 The following examples illustrate the use of LCE on public datasets for a classification and a regression task.
-They also demonstrate the compatibility of LCE with scikit-learn pipelines and model selection tools through the use of ``cross_val_score`` and ``GridSearchCV``.
+They also demonstrate the compatibility of LCE with scikit-learn pipelines and model selection tools through the use of ``cross_val_score``.
 An example of LCE on a dataset including missing values is also shown.
 
 Classification
@@ -139,7 +139,7 @@ Classification
 
 
 - **Example 2: LCE with scikit-learn cross validation score**
-This example demonstrates the compatibility of LCE with scikit-learn model selection tools through the use of ``cross_val_score``.
+This example demonstrates the compatibility of LCE with scikit-learn pipelines and model selection tools through the use of ``cross_val_score``.
 
 .. code-block:: python
 
@@ -220,7 +220,7 @@ Regression
 	X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, random_state=0)
 
 	# Train LCERegressor with default parameters
-	reg = LCERegressor(n_jobs=-1, random_state=0)
+	reg = LCERegressor(n_jobs=-1, random_state=123)
 	reg.fit(X_train, y_train)
 
 	# Make prediction 
@@ -230,41 +230,7 @@ Regression
 	
 .. code-block::
 	
-	The mean squared error (MSE) on test set: 3556
-
-
-- **Example 5: LCE with scikit-learn best hyperparameter grid search**
-This example demonstrates the compatibility of LCE with scikit-learn model selection tools through the use of ``GridSearchCV``.
-
-.. code-block:: python
-
-	from lce import LCERegressor
-	from sklearn.datasets import load_diabetes
-	from sklearn.model_selection import train_test_split, GridSearchCV
-
-
-	# Load data and generate a train/test split
-	data = load_diabetes()
-	X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, random_state=0)
-
-	# Build LCERegressor with default parameters
-	reg = LCERegressor(n_jobs=-1, random_state=0)
-
-	# Define parameter ranges for grid search
-	params = {'n_estimators': list(range(10, 51, 20)),
-		  'max_depth': list(range(0, 3, 1))}
-
-	# Run scikit learn grid search 
-	grid_cv = GridSearchCV(reg, param_grid=params, cv=3, n_jobs=-1)
-	grid_cv.fit(X_train, y_train)
-
-	# Print best configuration
-	print("Best n_estimator: ", grid_cv.best_params_['n_estimators'],
-	      ", best max_depth: ", grid_cv.best_params_['max_depth'])
-	
-.. code-block::
-	
-	Best n_estimator:  30 , best max_depth:  1
+	The mean squared error (MSE) on test set: 3576
 	  
 
 
@@ -359,28 +325,6 @@ Python Source Files
    :hidden:
 
    /auto_examples/lceregressor_diabetes
-   
-   
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="LCERegressor on Diabetes Dataset with scikit-learn hyperparameter grid search">
-
-.. only:: html
-
- .. figure:: _images/logo_lce.svg
-     :alt: LCERegressor on Diabetes dataset with scikit-learn hyperparameter grid search
-
-     :ref:`sphx_glr_auto_examples_lceregressor_diabetes_gridsearchcv.py`
-
-.. raw:: html
-
-    </div>
-
-
-.. toctree::
-   :hidden:
-
-   /auto_examples/lceregressor_diabetes_gridsearchcv
    
    
 

@@ -211,17 +211,13 @@ def xgb_opt_classifier(
         return scorer(clf, X, y)
 
     global best
-    global best_print
-    best = 0
-    best_print = 0
+    best = -np.inf
 
     def f(params):
         global best
-        global best_print
         perf = p_model(params)
         if perf > best:
             best = perf
-        best_print = best
         return {"loss": -best, "status": STATUS_OK}
 
     rstate = np.random.default_rng(random_state)
@@ -462,18 +458,14 @@ def xgb_opt_regressor(
         return scorer(reg, X, y)
 
     global best
-    global best_print
-    best = 0
-    best_print = 0
+    best = -np.inf
 
     def f(params):
         global best
-        global best_print
         perf = p_model(params)
         if perf > best:
             best = perf
-        best_print = best
-        return {"loss": best, "status": STATUS_OK}
+        return {"loss": -best, "status": STATUS_OK}
 
     rstate = np.random.default_rng(random_state)
     best_config = fmin(
