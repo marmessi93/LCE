@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@3.2.3
 
 jobs:
   build:
@@ -31,9 +34,25 @@ jobs:
     filters:
       branches:
         ignore: gh-pages
+        
+  test-lce:
+    docker:
+      - image: cimg/python:3.7.7
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: |
+            pip install -r requirements.txt
+            pip install pytest pytest-cov
+      - run:
+          name: run tests and collect coverage
+          command: pytest --cov lce/
+      - codecov/upload
 
 workflows:
-  version: 2
+  version: 2.1
   workflow:
     jobs:
       - build
+      - test-lce
