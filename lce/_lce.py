@@ -750,11 +750,14 @@ class LCERegressor(RegressorMixin, BaseEstimator):
     --------
     >>> from lce import LCERegressor
     >>> from sklearn.datasets import load_diabetes
-    >>> from sklearn.model_selection import cross_val_score
-    >>> diabetes = load_diabetes()
-    >>> reg = LCERegressor(n_jobs=-1, random_state=0)
-    >>> cross_val_score(reg, diabetes.data, diabetes.target, cv=3)
-    array([0.43290895, 0.46717328, 0.40141932])
+    >>> from sklearn.metrics import mean_squared_error
+    >>> from sklearn.model_selection import train_test_split
+    >>> data = load_diabetes()
+    >>> X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, random_state=0)
+    >>> reg = LCERegressor(n_jobs=-1, random_state=123)
+    >>> y_pred = reg.fit(X_train, y_train).predict(X_test)
+    >>> round(mean_squared_error(y_test, y_pred))
+    3576
     """
 
     def __init__(
