@@ -754,7 +754,7 @@ class LCERegressor(RegressorMixin, BaseEstimator):
     >>> diabetes = load_diabetes()
     >>> reg = LCERegressor(n_jobs=-1, random_state=0)
     >>> cross_val_score(reg, diabetes.data, diabetes.target, cv=3)
-    array([0.35317032, 0.39600438, 0.33379507])
+    array([0.43290895, 0.46717328, 0.40141932])
     """
 
     def __init__(
