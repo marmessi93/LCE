@@ -508,8 +508,6 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         for key, value in params.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-            else:
-                self.kwargs[key] = value
 
         return self
 
@@ -975,7 +973,5 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         for key, value in params.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-            else:
-                self.kwargs[key] = value
 
         return self

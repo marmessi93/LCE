@@ -9,6 +9,9 @@
 		<a href="https://circleci.com/gh/LocalCascadeEnsemble/LCE/tree/main">
 			<img src="https://circleci.com/gh/LocalCascadeEnsemble/LCE/tree/main.svg?style=shield">
 		</a>
+		<a href="https://codecov.io/gh/LocalCascadeEnsemble/LCE">
+			<img src="https://codecov.io/gh/LocalCascadeEnsemble/LCE/branch/main/graph/badge.svg?token=VTA64P4GTF">
+		</a>
 		<a href="https://lce.readthedocs.io/en/latest/?badge=latest">
 			<img src="https://readthedocs.org/projects/lce/badge/?version=latest">
 		</a>
