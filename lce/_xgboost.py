@@ -205,7 +205,7 @@ def xgb_opt_classifier(
 
     # Get best configuration
     def p_model(params):
-        clf = xgb.XGBClassifier(**params, use_label_encoder=False, seed=0, verbosity=0)
+        clf = xgb.XGBClassifier(**params, use_label_encoder=False, verbosity=0)
         clf.fit(X, y)
         scorer = check_scoring(clf, scoring=metric)
         return scorer(clf, X, y)
@@ -250,7 +250,7 @@ def xgb_opt_classifier(
         "n_jobs": n_jobs,
         "random_state": random_state,
     }
-    clf = xgb.XGBClassifier(**final_params, use_label_encoder=False, seed=0, verbosity=0)
+    clf = xgb.XGBClassifier(**final_params, use_label_encoder=False, verbosity=0)
     return clf.fit(X, y)
 
 
@@ -452,7 +452,7 @@ def xgb_opt_regressor(
 
     # Get best configuration
     def p_model(params):
-        reg = xgb.XGBRegressor(**params, seed=0, verbosity=0)
+        reg = xgb.XGBRegressor(**params, verbosity=0)
         reg.fit(X, y)
         scorer = check_scoring(reg, scoring=metric)
         return scorer(reg, X, y)
@@ -496,5 +496,5 @@ def xgb_opt_regressor(
         "n_jobs": n_jobs,
         "random_state": random_state,
     }
-    reg = xgb.XGBRegressor(**final_params, seed=0, verbosity=0)
+    reg = xgb.XGBRegressor(**final_params, verbosity=0)
     return reg.fit(X, y)

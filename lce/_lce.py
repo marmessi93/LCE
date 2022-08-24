@@ -239,16 +239,6 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
     References
     ----------
     .. [1] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. "XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification", Data Mining and Knowledge Discovery, 36(3):917-957, 2022. https://hal.inria.fr/hal-03599214/document
-
-    Examples
-    --------
-    >>> from lce import LCEClassifier
-    >>> from sklearn.datasets import load_iris
-    >>> from sklearn.model_selection import cross_val_score
-    >>> iris = load_iris()
-    >>> clf = LCEClassifier(n_jobs=-1, random_state=123)
-    >>> cross_val_score(clf, iris.data, iris.target, cv=3)
-    array([0.98, 0.94, 0.96])
     """
 
     def __init__(
@@ -745,16 +735,6 @@ class LCERegressor(RegressorMixin, BaseEstimator):
     of the criterion is identical for several splits enumerated during the
     search of the best split. To obtain a deterministic behaviour during
     fitting, ``random_state`` has to be fixed.
-
-    Examples
-    --------
-    >>> from lce import LCERegressor
-    >>> from sklearn.datasets import load_diabetes
-    >>> from sklearn.model_selection import cross_val_score
-    >>> diabetes = load_diabetes()
-    >>> reg = LCERegressor(n_jobs=-1, random_state=0)
-    >>> cross_val_score(reg, diabetes.data, diabetes.target, cv=3)
-    array([0.41582705, 0.49072266, 0.40869121])
     """
 
     def __init__(
