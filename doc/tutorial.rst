@@ -230,7 +230,7 @@ Regression
 	
 .. code-block::
 	
-	The mean squared error (MSE) on test set: 3576
+	The mean squared error (MSE) on test set: 3529
 	  
 
 
