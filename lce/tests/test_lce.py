@@ -48,6 +48,18 @@ class Test(unittest.TestCase):
         # Load Iris dataset
         data = load_iris()
 
+        # Input 20% of missing values per variable
+        np.random.seed(0)
+        m = 0.2
+        for j in range(0, data.data.shape[1]):
+            sub = np.random.choice(data.data.shape[0], int(data.data.shape[0] * m))
+            data.data[sub, j] = np.nan
+
+        with warnings.catch_warnings():
+            LCEClassifier(max_depth=50, min_samples_leaf=1, random_state=0).fit(
+                data.data, data.target
+            )
+
         # Input 60% of missing values per variable
         np.random.seed(0)
         m = 0.6
@@ -56,7 +68,7 @@ class Test(unittest.TestCase):
             data.data[sub, j] = np.nan
 
         with warnings.catch_warnings():
-            LCEClassifier(n_estimators=5, max_depth=20, random_state=0).fit(
+            LCEClassifier(max_depth=50, min_samples_leaf=1, random_state=0).fit(
                 data.data, data.target
             )
 
@@ -68,7 +80,7 @@ class Test(unittest.TestCase):
             data.data[sub, j] = np.nan
 
         with warnings.catch_warnings():
-            LCEClassifier(n_estimators=5, max_depth=20, random_state=0).fit(
+            LCEClassifier(max_depth=50, min_samples_leaf=1, random_state=0).fit(
                 data.data, data.target
             )
 
@@ -114,6 +126,18 @@ class Test(unittest.TestCase):
         # Load Diabetes dataset
         data = load_diabetes()
 
+        # Input 20% of missing values per variable
+        np.random.seed(0)
+        m = 0.2
+        for j in range(0, data.data.shape[1]):
+            sub = np.random.choice(data.data.shape[0], int(data.data.shape[0] * m))
+            data.data[sub, j] = np.nan
+
+        with warnings.catch_warnings():
+            LCERegressor(max_depth=50, min_samples_leaf=1, random_state=0).fit(
+                data.data, data.target
+            )
+
         # Input 60% of missing values per variable
         np.random.seed(0)
         m = 0.6
@@ -122,7 +146,7 @@ class Test(unittest.TestCase):
             data.data[sub, j] = np.nan
 
         with warnings.catch_warnings():
-            LCERegressor(n_estimators=5, max_depth=20, random_state=0).fit(
+            LCERegressor(max_depth=50, min_samples_leaf=1, random_state=0).fit(
                 data.data, data.target
             )
 
@@ -134,7 +158,7 @@ class Test(unittest.TestCase):
             data.data[sub, j] = np.nan
 
         with warnings.catch_warnings():
-            LCERegressor(n_estimators=5, max_depth=20, random_state=0).fit(
+            LCERegressor(max_depth=50, min_samples_leaf=1, random_state=0).fit(
                 data.data, data.target
             )
 

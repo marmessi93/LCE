@@ -164,48 +164,10 @@ This example demonstrates the compatibility of LCE with scikit-learn pipelines a
 	Cross-validation scores on train set:  [92.1, 100.0, 94.6]
 
 
-- **Example 3: LCE with missing values**
-This example illustrates the robustness of LCE to missing values. The Iris train set is modified with 20% of missing values per variable.
-
-.. code-block:: python
-
-	import numpy as np
-	from lce import LCEClassifier
-	from sklearn.datasets import load_iris
-	from sklearn.metrics import accuracy_score
-	from sklearn.model_selection import train_test_split
-
-
-	# Load data and generate a train/test split
-	data = load_iris()
-	X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, random_state=0)
-
-	# Input 20% of missing values per variable in the train set
-	np.random.seed(0)
-	m = 0.2
-	for j in range(0, X_train.shape[1]):
-		sub = np.random.choice(X_train.shape[0], int(X_train.shape[0]*m))
-		X_train[sub, j] = np.nan
-
-	# Train LCEClassifier with default parameters
-	clf = LCEClassifier(n_jobs=-1, random_state=0)
-	clf.fit(X_train, y_train)
-
-	# Make prediction and compute accuracy score
-	y_pred = clf.predict(X_test)
-	accuracy = accuracy_score(y_test, y_pred)
-	print("Accuracy: {:.1f}%".format(accuracy*100))
-
-
-.. code-block::
-
-	Accuracy: 94.7%
-
-
 Regression
 ----------
 
-- **Example 4: LCE on Diabetes Dataset**
+- **Example 3: LCE on Diabetes Dataset**
 
 .. code-block:: python
 
@@ -233,6 +195,42 @@ Regression
 	The mean squared error (MSE) on test set: 3576
 	  
 
+- **Example 4: LCE with missing values**
+This example illustrates the robustness of LCE to missing values. The Diabetes train set is modified with 20% of missing values per variable.
+
+.. code-block:: python
+
+	import numpy as np
+	from lce import LCERegressor
+	from sklearn.datasets import load_diabetes
+	from sklearn.metrics import mean_squared_error
+	from sklearn.model_selection import train_test_split
+
+
+	# Load data and generate a train/test split
+	data = load_diabetes()
+	X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, random_state=0)
+
+	# Input 20% of missing values per variable in the train set
+	np.random.seed(0)
+	m = 0.2
+	for j in range(0, X_train.shape[1]):
+        sub = np.random.choice(X_train.shape[0], int(X_train.shape[0]*m))
+        X_train[sub, j] = np.nan
+
+	# Train LCERegressor with default parameters
+	reg = LCERegressor(n_jobs=-1, random_state=123)
+	reg.fit(X_train, y_train)
+
+	# Make prediction
+	y_pred = reg.predict(X_test)
+	mse = mean_squared_error(y_test, y_pred)
+	print("The mean squared error (MSE) on test set: {:.0f}".format(mse))
+
+.. code-block::
+	
+	The mean squared error (MSE) on test set: 3788
+	
 
 Python Source Files
 -------------------
@@ -279,29 +277,6 @@ Python Source Files
    :hidden:
 
    /auto_examples/lceclassifier_iris_cv
-
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="LCEClassifier with missing values">
-
-.. only:: html
-
- .. figure:: _images/logo_lce.svg
-     :alt: LCEClassifier on Iris dataset with missing values
-
-     :ref:`sphx_glr_auto_examples_lceclassifier_missing_iris.py`
-
-.. raw:: html
-
-    </div>
-
-
-.. toctree::
-   :hidden:
-
-   /auto_examples/lceclassifier_missing_iris
    
 
 
@@ -325,6 +300,28 @@ Python Source Files
    :hidden:
 
    /auto_examples/lceregressor_diabetes
+   
+ 
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="LCERegressor with missing values">
+
+.. only:: html
+
+ .. figure:: _images/logo_lce.svg
+     :alt: LCERegressor on Diabetes dataset with missing values
+
+     :ref:`sphx_glr_auto_examples_lceregressor_missing_diabetes.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/lceregressor_missing_diabetes
    
    
 

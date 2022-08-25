@@ -1016,19 +1016,19 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                         leafs = split.apply(X_withoutnans)
                         (X_left, y_left), (X_right, y_right) = (
                             np.squeeze(X_withoutnans[np.argwhere(leafs == 1), :]),
-                            np.squeeze(y_withoutnans[np.argwhere(leafs == 1)]),
+                            y_withoutnans[np.argwhere(leafs == 1)][:, 0],
                         ), (
                             np.squeeze(X_withoutnans[np.argwhere(leafs == 2), :]),
-                            np.squeeze(y_withoutnans[np.argwhere(leafs == 2)]),
+                            y_withoutnans[np.argwhere(leafs == 2)][:, 0],
                         )
                     else:
                         leafs = split.apply(X)
                         (X_left, y_left), (X_right, y_right) = (
                             np.squeeze(X[np.argwhere(leafs == 1), :]),
-                            np.squeeze(y[np.argwhere(leafs == 1)]),
+                            y[np.argwhere(leafs == 1)][:, 0],
                         ), (
                             np.squeeze(X[np.argwhere(leafs == 2), :]),
-                            np.squeeze(y[np.argwhere(leafs == 2)]),
+                            y[np.argwhere(leafs == 2)][:, 0],
                         )
 
                     N_left, N_right = y_left.size, y_right.size
@@ -1046,7 +1046,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                             node["missing_side"] = "left"
                             if missing:
                                 X_left = np.append(X_left, X[nans], axis=0)
-                                y_left = np.append([y_left], y[nans], axis=0)
+                                y_left = np.append(y_left, y[nans], axis=0)
 
                         if N_right == 1:
                             X_right = X_right.reshape(-1, 1).T
@@ -1054,7 +1054,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                                 node["missing_side"] = "right"
                                 if missing:
                                     X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append([y_right], y[nans], axis=0)
+                                    y_right = np.append(y_right, y[nans], axis=0)
 
                         score_conditions = [N_left > 1, N_right > 1]
                         if all(score_conditions):
