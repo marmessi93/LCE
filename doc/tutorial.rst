@@ -215,8 +215,8 @@ This example illustrates the robustness of LCE to missing values. The Diabetes t
 	np.random.seed(0)
 	m = 0.2
 	for j in range(0, X_train.shape[1]):
-        sub = np.random.choice(X_train.shape[0], int(X_train.shape[0]*m))
-        X_train[sub, j] = np.nan
+		sub = np.random.choice(X_train.shape[0], int(X_train.shape[0]*m))
+		X_train[sub, j] = np.nan
 
 	# Train LCERegressor with default parameters
 	reg = LCERegressor(n_jobs=-1, random_state=123)
