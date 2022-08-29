@@ -48,6 +48,18 @@ class Test(unittest.TestCase):
         # Load Iris dataset
         data = load_iris()
 
+        # Input 2% of missing values per variable
+        np.random.seed(0)
+        m = 0.02
+        for j in range(0, data.data.shape[1]):
+            sub = np.random.choice(data.data.shape[0], int(data.data.shape[0] * m))
+            data.data[sub, j] = np.nan
+
+        with warnings.catch_warnings():
+            LCEClassifier(max_depth=50, min_samples_leaf=1, random_state=0).fit(
+                data.data, data.target
+            )
+
         # Input 20% of missing values per variable
         np.random.seed(0)
         m = 0.2
@@ -125,6 +137,19 @@ class Test(unittest.TestCase):
     def test_regressor_missing(self):
         # Load Diabetes dataset
         data = load_diabetes()
+
+        # Input 2% of missing values per variable
+        np.random.seed(0)
+        m = 0.02
+        for j in range(0, data.data.shape[1]):
+            sub = np.random.choice(data.data.shape[0], int(data.data.shape[0] * m))
+            temp = data.data
+            temp[sub, j] = np.nan
+
+        with warnings.catch_warnings():
+            LCERegressor(max_depth=50, min_samples_leaf=1, random_state=0).fit(
+                temp, data.target
+            )
 
         # Input 20% of missing values per variable
         np.random.seed(0)
