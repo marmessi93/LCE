@@ -13,8 +13,8 @@ jobs:
       run:
         working-directory: ./lce
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@master
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
         with:
           python-version: 3.10
       - name: install dependencies
@@ -24,4 +24,4 @@ jobs:
       - name: run tests and collect coverage
         run: pytest --cov=./ --cov-report=xml
       - name: upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@master
+        uses: codecov/codecov-action@v3
