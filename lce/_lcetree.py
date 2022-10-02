@@ -817,7 +817,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
 
             else:
                 nans = np.isnan(X).any(axis=1)
-                if nans:
+                if nans.sum() > 0:
                     leafs = node["split"].apply(X[~nans, 1:])
                     leafs_left = leafs == 1
                     leafs_right = np.invert(leafs_left)
@@ -1654,7 +1654,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             else:
                 nans = np.isnan(X).any(axis=1)
-                if nans:
+                if nans.sum() > 0:
                     leafs = node["split"].apply(X[~nans, 1:])
                     leafs_left = leafs == 1
                     leafs_right = np.invert(leafs_left)
