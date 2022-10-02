@@ -229,7 +229,7 @@ This example illustrates the robustness of LCE to missing values. The Diabetes t
 
 .. code-block::
 	
-	The mean squared error (MSE) on test set: 3788
+	The mean squared error (MSE) on test set: 3736
 	
 
 Python Source Files

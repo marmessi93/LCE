@@ -1,6 +1,7 @@
 import numpy as np
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 from sklearn.metrics import check_scoring
+from sklearn.preprocessing import OneHotEncoder
 import xgboost as xgb
 
 
@@ -207,8 +208,13 @@ def xgb_opt_classifier(
     def p_model(params):
         clf = xgb.XGBClassifier(**params, use_label_encoder=False, verbosity=0)
         clf.fit(X, y)
+        if n_classes == 2:
+            onehot_encoder = OneHotEncoder(sparse=False)
+            y_score = onehot_encoder.fit_transform(y.reshape(len(y), 1))
+        else:
+            y_score = y
         scorer = check_scoring(clf, scoring=metric)
-        return scorer(clf, X, y)
+        return scorer(clf, X, y_score)
 
     global best
     best = -np.inf

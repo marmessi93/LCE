@@ -23,10 +23,10 @@ DOWNLOAD_URL = "https://github.com/LocalCascadeEnsemble/LCE"
 VERSION = __version__
 INSTALL_REQUIRES = [
     "hyperopt==0.2.7",
-    "numpy==1.21.5",
-    "pandas==1.3.5",
-    "scikit-learn==1.0.2",
-    "xgboost==1.5.0",
+    "numpy==1.23.3",
+    "pandas==1.5.0",
+    "scikit-learn==1.1.2",
+    "xgboost==1.6.2",
 ]
 PROJECT_URLS = {
     "Documentation": "https://lce.readthedocs.io/en/latest/",
@@ -34,7 +34,6 @@ PROJECT_URLS = {
 CLASSIFIERS = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -47,7 +46,7 @@ EXTRAS_REQUIRE = {
 
 setup(
     name=DISTNAME,
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     maintainer=MAINTAINER,
     maintainer_email=MAINTAINER_EMAIL,
     description=DESCRIPTION,

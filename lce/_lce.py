@@ -431,7 +431,7 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         self.X_ = True
         self.y_ = True
         self.classes_, y = np.unique(y, return_inverse=True)
-        self.n_classes_ = np.unique(y).size
+        self.n_classes_ = self.classes_.size
         self.encoder_ = LabelEncoder()
         self.encoder_.fit(self.classes_)
         self.base_estimator_ = self._generate_estimator()

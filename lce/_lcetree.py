@@ -1,4 +1,5 @@
 import numpy as np
+from joblib import delayed, Parallel
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
@@ -322,30 +323,21 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 pred_proba = np.around(model_node.predict_proba(X), 6)
 
                 c = 0
+                X = np.concatenate(
+                    [X, np.zeros((X.shape[0], self.n_classes_in))], axis=1
+                )
+                y_unique = np.unique(y)
+                y_unique_size = y_unique.size
                 for i in range(0, self.n_classes_in):
-                    X = np.insert(X, X.shape[1], 0, axis=1)
                     if i in y:
-                        if np.unique(y).size == 1:
-                            X[:, -1] = pred_proba[:, 1]
+                        if y_unique_size == 1:
+                            X[:, -self.n_classes_in + i] = pred_proba[:, 1]
                         else:
-                            X[:, -1] = pred_proba[:, c]
+                            X[:, -self.n_classes_in + i] = pred_proba[:, c]
                             c += 1
 
-                # Missing data information
-                num_nans = np.isnan(X).any(axis=1).sum()
-                if num_nans > 0:
-                    missing = True
-                    if num_nans == y.size:
-                        missing_only = True
-                    else:
-                        missing_only = False
-                else:
-                    missing = False
-                    missing_only = False
-
                 # Split
-                split_val_conditions = [y.size > 1, missing_only == False]
-                if all(split_val_conditions):
+                if y.size > 1:
                     split = DecisionTreeClassifier(
                         criterion=self.criterion,
                         splitter=self.splitter,
@@ -353,11 +345,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                         max_features=self.max_features,
                         random_state=self.random_state,
                     )
-                    if missing:
-                        nans = np.isnan(X).any(axis=1)
-                        split.fit(X[~nans], y[~nans])
-                    else:
-                        split.fit(X, y)
+                    split.fit(X, y)
                 else:
                     split = None
 
@@ -366,10 +354,10 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     "index": container["index_node_global"],
                     "model": model_node,
                     "data": (X, y),
-                    "classes_in": np.unique(y),
+                    "classes_in": y_unique,
                     "num_classes": self.n_classes_in,
                     "split": split,
-                    "missing": {"missing": missing, "missing_only": missing_only},
+                    "missing": {"missing": None, "missing_only": None},
                     "missing_side": None,
                     "children": {"left": None, "right": None},
                     "depth": depth,
@@ -383,8 +371,6 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 X, y = node["data"]
                 depth = node["depth"]
                 split = node["split"]
-                missing = node["missing"]["missing"]
-                missing_only = node["missing"]["missing_only"]
 
                 did_split = False
                 data = None
@@ -394,30 +380,20 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     depth >= 0,
                     depth < self.max_depth,
                     np.unique(y).size > 1,
-                    missing_only == False,
                 ]
 
                 if all(stopping_criteria):
-                    if missing:
-                        nans = np.isnan(X).any(axis=1)
-                        X_withoutnans, y_withoutnans = X[~nans], y[~nans]
-                        leafs = split.apply(X_withoutnans)
-                        (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X_withoutnans[np.argwhere(leafs == 1), :]),
-                            np.squeeze(y_withoutnans[np.argwhere(leafs == 1)]),
-                        ), (
-                            np.squeeze(X_withoutnans[np.argwhere(leafs == 2), :]),
-                            np.squeeze(y_withoutnans[np.argwhere(leafs == 2)]),
-                        )
-                    else:
-                        leafs = split.apply(X)
-                        (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X[np.argwhere(leafs == 1), :]),
-                            np.squeeze(y[np.argwhere(leafs == 1)]),
-                        ), (
-                            np.squeeze(X[np.argwhere(leafs == 2), :]),
-                            np.squeeze(y[np.argwhere(leafs == 2)]),
-                        )
+                    leafs = split.apply(X)
+                    leafs_left = leafs == 1
+                    leafs_right = np.invert(leafs_left)
+
+                    (X_left, y_left), (X_right, y_right) = (
+                        np.squeeze(X[leafs_left]),
+                        np.squeeze(y[leafs_left]),
+                    ), (
+                        np.squeeze(X[leafs_right]),
+                        np.squeeze(y[leafs_right]),
+                    )
 
                     N_left, N_right = y_left.size, y_right.size
 
@@ -431,33 +407,9 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
 
                         if N_left == 1:
                             X_left = X_left.reshape(-1, 1).T
-                            node["missing_side"] = "left"
-                            if missing:
-                                X_left = np.append(X_left, X[nans], axis=0)
-                                y_left = np.append([y_left], y[nans], axis=0)
 
                         if N_right == 1:
                             X_right = X_right.reshape(-1, 1).T
-                            if N_left > 1:
-                                node["missing_side"] = "right"
-                                if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append([y_right], y[nans], axis=0)
-
-                        score_conditions = [N_left > 1, N_right > 1]
-                        if all(score_conditions):
-                            if split.score(X_left, y_left) > split.score(
-                                X_right, y_right
-                            ):
-                                node["missing_side"] = "left"
-                                if missing:
-                                    X_left = np.append(X_left, X[nans], axis=0)
-                                    y_left = np.append(y_left, y[nans], axis=0)
-                            else:
-                                node["missing_side"] = "right"
-                                if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append(y_right, y[nans], axis=0)
 
                         data = [(X_left, y_left), (X_right, y_right)]
 
@@ -518,10 +470,267 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
             if self.verbose > 0 and self.n_jobs == None:
                 print("\nNew Tree")
             root = _create_node(X, y, 0, container)
-            _split_traverse_node(root, container)
+            Parallel(n_jobs=self.n_jobs, prefer="threads")(
+                delayed(_split_traverse_node)(root, container) for _ in range(1)
+            )
             return root
 
-        self.tree = _build_tree(X, y)
+        def _build_tree_missing(X, y):
+            """Build a LCE tree with missing data."""
+            global index_node_global
+
+            def _create_node_missing(X, y, depth, container):
+                """Create a node in the tree."""
+                # Add XGBoost predictions as features to the dataset
+                model_node = xgb_opt_classifier(
+                    X,
+                    y,
+                    n_iter=self.n_iter,
+                    metric=self.metric,
+                    n_estimators=self.xgb_max_n_estimators,
+                    n_estimators_step=self.xgb_n_estimators_step,
+                    max_depth=self.xgb_max_depth,
+                    min_learning_rate=self.xgb_min_learning_rate,
+                    max_learning_rate=self.xgb_max_learning_rate,
+                    learning_rate_step=self.xgb_learning_rate_step,
+                    booster=self.xgb_booster,
+                    min_gamma=self.xgb_min_gamma,
+                    max_gamma=self.xgb_max_gamma,
+                    gamma_step=self.xgb_gamma_step,
+                    min_min_child_weight=self.xgb_min_min_child_weight,
+                    max_min_child_weight=self.xgb_max_min_child_weight,
+                    min_child_weight_step=self.xgb_min_child_weight_step,
+                    subsample=self.xgb_subsample,
+                    colsample_bytree=self.xgb_colsample_bytree,
+                    colsample_bylevel=self.xgb_colsample_bylevel,
+                    colsample_bynode=self.xgb_colsample_bynode,
+                    min_reg_alpha=self.xgb_min_reg_alpha,
+                    max_reg_alpha=self.xgb_max_reg_alpha,
+                    reg_alpha_step=self.xgb_reg_alpha_step,
+                    min_reg_lambda=self.xgb_min_reg_lambda,
+                    max_reg_lambda=self.xgb_max_reg_lambda,
+                    reg_lambda_step=self.xgb_reg_lambda_step,
+                    n_jobs=self.n_jobs,
+                    random_state=self.random_state,
+                )
+                pred_proba = np.around(model_node.predict_proba(X), 6)
+
+                c = 0
+                X = np.concatenate(
+                    [X, np.zeros((X.shape[0], self.n_classes_in))], axis=1
+                )
+                y_unique = np.unique(y)
+                y_unique_size = y_unique.size
+                for i in range(0, self.n_classes_in):
+                    if i in y:
+                        if y_unique_size == 1:
+                            X[:, -self.n_classes_in + i] = pred_proba[:, 1]
+                        else:
+                            X[:, -self.n_classes_in + i] = pred_proba[:, c]
+                            c += 1
+
+                # Missing data information
+                nans = np.isnan(X).any(axis=1)
+                num_nans = nans.sum()
+                y_size = y.size
+                if num_nans > 0:
+                    missing = True
+                    if num_nans == y_size:
+                        missing_only = True
+                    else:
+                        missing_only = False
+                else:
+                    missing = False
+                    missing_only = False
+
+                # Split
+                split_val_conditions = [y_size > 1, missing_only == False]
+                if all(split_val_conditions):
+                    split = DecisionTreeClassifier(
+                        criterion=self.criterion,
+                        splitter=self.splitter,
+                        max_depth=1,
+                        max_features=self.max_features,
+                        random_state=self.random_state,
+                    )
+                    if missing:
+                        split.fit(X[~nans], y[~nans])
+                    else:
+                        split.fit(X, y)
+                else:
+                    split = None
+
+                # Node information
+                node = {
+                    "index": container["index_node_global"],
+                    "model": model_node,
+                    "data": (X, y),
+                    "classes_in": y_unique,
+                    "num_classes": self.n_classes_in,
+                    "split": split,
+                    "missing": {"missing": missing, "missing_only": missing_only},
+                    "missing_side": None,
+                    "children": {"left": None, "right": None},
+                    "depth": depth,
+                }
+                container["index_node_global"] += 1
+                return node
+
+            def _splitter_missing(node):
+                """Perform the split of a node."""
+                # Extract data
+                X, y = node["data"]
+                depth = node["depth"]
+                split = node["split"]
+                missing = node["missing"]["missing"]
+                missing_only = node["missing"]["missing_only"]
+
+                did_split = False
+                data = None
+
+                # Perform split if the conditions are met
+                stopping_criteria = [
+                    depth >= 0,
+                    depth < self.max_depth,
+                    np.unique(y).size > 1,
+                    missing_only == False,
+                ]
+
+                if all(stopping_criteria):
+                    if missing:
+                        nans = np.isnan(X).any(axis=1)
+                        X_withoutnans, y_withoutnans = X[~nans], y[~nans]
+                        leafs = split.apply(X_withoutnans)
+                        leafs_left = leafs == 1
+                        leafs_right = np.invert(leafs_left)
+                        (X_left, y_left), (X_right, y_right) = (
+                            np.squeeze(X_withoutnans[leafs_left, :]),
+                            np.squeeze(y_withoutnans[leafs_left]),
+                        ), (
+                            np.squeeze(X_withoutnans[leafs_right, :]),
+                            np.squeeze(y_withoutnans[leafs_right]),
+                        )
+                    else:
+                        leafs = split.apply(X)
+                        leafs_left = leafs == 1
+                        leafs_right = np.invert(leafs_left)
+
+                        (X_left, y_left), (X_right, y_right) = (
+                            np.squeeze(X[leafs_left, :]),
+                            np.squeeze(y[leafs_left]),
+                        ), (
+                            np.squeeze(X[leafs_right, :]),
+                            np.squeeze(y[leafs_right]),
+                        )
+
+                    N_left, N_right = y_left.size, y_right.size
+
+                    split_conditions = [
+                        N_left >= self.min_samples_leaf,
+                        N_right >= self.min_samples_leaf,
+                    ]
+
+                    if all(split_conditions):
+                        did_split = True
+
+                        if N_left == 1:
+                            X_left = X_left.reshape(-1, 1).T
+                            node["missing_side"] = "left"
+                            if missing:
+                                X_left = np.append(X_left, X[nans], axis=0)
+                                y_left = np.append([y_left], y[nans], axis=0)
+
+                        if N_right == 1:
+                            X_right = X_right.reshape(-1, 1).T
+                            if N_left > 1:
+                                node["missing_side"] = "right"
+                                if missing:
+                                    X_right = np.append(X_right, X[nans], axis=0)
+                                    y_right = np.append([y_right], y[nans], axis=0)
+
+                        score_conditions = [N_left > 1, N_right > 1]
+                        if all(score_conditions):
+                            if split.score(X_left, y_left) > split.score(
+                                X_right, y_right
+                            ):
+                                node["missing_side"] = "left"
+                                if missing:
+                                    X_left = np.append(X_left, X[nans], axis=0)
+                                    y_left = np.append(y_left, y[nans], axis=0)
+                            else:
+                                node["missing_side"] = "right"
+                                if missing:
+                                    X_right = np.append(X_right, X[nans], axis=0)
+                                    y_right = np.append(y_right, y[nans], axis=0)
+
+                        data = [(X_left, y_left), (X_right, y_right)]
+
+                result = {"did_split": did_split, "data": data}
+                return result
+
+            def _split_traverse_node_missing(node, container):
+                """Process splitting results and continue with child nodes."""
+                # Perform split and collect result
+                result = _splitter_missing(node)
+
+                # Return terminal node if no split
+                if not result["did_split"]:
+                    if self.verbose > 0 and self.n_jobs == None:
+                        depth_spacing_str = " ".join([" "] * node["depth"])
+                        print(
+                            " {}*leaf {} @ depth {}: Unique_y {},  N_samples {}".format(
+                                depth_spacing_str,
+                                node["index"],
+                                node["depth"],
+                                np.unique(node["data"][1]),
+                                np.unique(node["data"][1], return_counts=True)[1],
+                            )
+                        )
+                    return
+                del node["data"]
+
+                # Extract splitting results
+                (X_left, y_left), (X_right, y_right) = result["data"]
+
+                # Report created node to user
+                if self.verbose > 0 and self.n_jobs == None:
+                    depth_spacing_str = " ".join([" "] * node["depth"])
+                    print(
+                        " {}node {} @ depth {}: dataset={}, N_left={}, N_right={}".format(
+                            depth_spacing_str,
+                            node["index"],
+                            node["depth"],
+                            (X_left.shape[0] + X_right.shape[0], X_left.shape[1]),
+                            X_left.shape[0],
+                            X_right.shape[0],
+                        )
+                    )
+
+                # Create child nodes
+                node["children"]["left"] = _create_node_missing(
+                    X_left, y_left, node["depth"] + 1, container
+                )
+                node["children"]["right"] = _create_node_missing(
+                    X_right, y_right, node["depth"] + 1, container
+                )
+
+                # Split nodes
+                _split_traverse_node_missing(node["children"]["left"], container)
+                _split_traverse_node_missing(node["children"]["right"], container)
+
+            container = {"index_node_global": 0}
+            if self.verbose > 0 and self.n_jobs == None:
+                print("\nNew Tree")
+            root = _create_node_missing(X, y, 0, container)
+            Parallel(n_jobs=self.n_jobs, prefer="threads")(
+                delayed(_split_traverse_node_missing)(root, container) for _ in range(1)
+            )
+            return root
+
+        if np.isnan(X).any():
+            self.tree = _build_tree_missing(X, y)
+        else:
+            self.tree = _build_tree(X, y)
         return self
 
     def predict_proba(self, X):
@@ -541,15 +750,16 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
 
         def _base_proba(node, X):
             y_pred = np.around(node["model"].predict_proba(X[:, 1:]), 6)
-            d = 0
-            for j in range(0, node["num_classes"]):
-                X = np.insert(X, X.shape[1], 0, axis=1)
-                if j in node["classes_in"]:
-                    if node["classes_in"].size == 1:
-                        X[:, -1] = y_pred[:, 1]
+            y_unique_size = node["classes_in"].size
+            c = 0
+            X = np.concatenate([X, np.zeros((X.shape[0], node["num_classes"]))], axis=1)
+            for i in range(0, node["num_classes"]):
+                if i in node["classes_in"]:
+                    if y_unique_size == 1:
+                        X[:, -node["num_classes"] + i] = y_pred[:, 1]
                     else:
-                        X[:, -1] = y_pred[:, d]
-                        d += 1
+                        X[:, -node["num_classes"] + i] = y_pred[:, c]
+                        c += 1
             return X
 
         def _predict_proba(node, X, y_pred_final=None):
@@ -570,26 +780,13 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 return y_pred_final
 
             else:
-                if np.isnan(X).sum() > 0:
-                    nans = np.isnan(X).any(axis=1)
-                    leafs = node["split"].apply(X[~nans, 1:])
-                    X_left, X_right = np.squeeze(
-                        X[~nans][np.argwhere(leafs == 1), :]
-                    ), np.squeeze(X[~nans][np.argwhere(leafs == 2), :])
-                    if node["missing_side"] == "left":
-                        X_left, X_right = (
-                            np.concatenate((X_left, X[nans]), axis=0),
-                            X_right,
-                        )
-                    else:
-                        X_left, X_right = X_left, np.concatenate(
-                            (X_right, X[nans]), axis=0
-                        )
-                else:
-                    leafs = node["split"].apply(X[:, 1:])
-                    X_left, X_right = np.squeeze(
-                        X[np.argwhere(leafs == 1), :]
-                    ), np.squeeze(X[np.argwhere(leafs == 2), :])
+                leafs = node["split"].apply(X[:, 1:])
+                leafs_left = leafs == 1
+                leafs_right = np.invert(leafs_left)
+
+                X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
+                    X[leafs_right, :]
+                )
 
                 if len(X_left) > 0:
                     y_pred_final = _predict_proba(
@@ -601,9 +798,67 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     )
                 return y_pred_final
 
+        def _predict_proba_missing(node, X, y_pred_final=None):
+            if X.ndim == 1:
+                X = _base_proba(node, X.reshape(-1, 1).T)
+            else:
+                X = _base_proba(node, X)
+
+            no_children = (
+                node["children"]["left"] is None and node["children"]["right"] is None
+            )
+            if no_children:
+                y_pred = np.column_stack((X[:, :1], X[:, -node["num_classes"] :]))
+                if y_pred_final is not None:
+                    y_pred_final = np.concatenate((y_pred_final, y_pred), axis=0)
+                else:
+                    y_pred_final = y_pred
+                return y_pred_final
+
+            else:
+                nans = np.isnan(X).any(axis=1)
+                if nans:
+                    leafs = node["split"].apply(X[~nans, 1:])
+                    leafs_left = leafs == 1
+                    leafs_right = np.invert(leafs_left)
+
+                    X_left, X_right = np.squeeze(X[~nans][leafs_left, :]), np.squeeze(
+                        X[~nans][leafs_right, :]
+                    )
+                    if node["missing_side"] == "left":
+                        X_left, X_right = (
+                            np.concatenate((X_left, X[nans]), axis=0),
+                            X_right,
+                        )
+                    else:
+                        X_left, X_right = X_left, np.concatenate(
+                            (X_right, X[nans]), axis=0
+                        )
+                else:
+                    leafs = node["split"].apply(X[:, 1:])
+                    leafs_left = leafs == 1
+                    leafs_right = np.invert(leafs_left)
+
+                    X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
+                        X[leafs_right, :]
+                    )
+
+                if len(X_left) > 0:
+                    y_pred_final = _predict_proba_missing(
+                        node["children"]["left"], X_left, y_pred_final
+                    )
+                if len(X_right) > 0:
+                    y_pred_final = _predict_proba_missing(
+                        node["children"]["right"], X_right, y_pred_final
+                    )
+                return y_pred_final
+
         index = np.arange(0, X.shape[0]).reshape(-1, 1)
         X = np.concatenate((index, X), axis=1)
-        y_pred = _predict_proba(self.tree, X, None)
+        if np.isnan(X).any():
+            y_pred = _predict_proba_missing(self.tree, X, None)
+        else:
+            y_pred = _predict_proba(self.tree, X, None)
         y_pred = y_pred[y_pred[:, 0].argsort()]
         y_pred = y_pred[:, 1:]
         return y_pred
@@ -945,21 +1200,8 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                 X = np.insert(X, X.shape[1], 0, axis=1)
                 X[:, -1] = preds
 
-                # Missing data information
-                num_nans = np.isnan(X).any(axis=1).sum()
-                if num_nans > 0:
-                    missing = True
-                    if num_nans == y.size:
-                        missing_only = True
-                    else:
-                        missing_only = False
-                else:
-                    missing = False
-                    missing_only = False
-
                 # Split
-                split_val_conditions = [y.size > 1, missing_only == False]
-                if all(split_val_conditions):
+                if y.size > 1:
                     split = DecisionTreeRegressor(
                         criterion=self.criterion,
                         splitter=self.splitter,
@@ -967,11 +1209,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                         max_features=self.max_features,
                         random_state=self.random_state,
                     )
-                    if missing:
-                        nans = np.isnan(X).any(axis=1)
-                        split.fit(X[~nans], y[~nans])
-                    else:
-                        split.fit(X, y)
+                    split.fit(X, y)
                 else:
                     split = None
 
@@ -981,7 +1219,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     "model": model_node,
                     "data": (X, y),
                     "split": split,
-                    "missing": {"missing": missing, "missing_only": missing_only},
+                    "missing": {"missing": None, "missing_only": None},
                     "missing_side": None,
                     "children": {"left": None, "right": None},
                     "depth": depth,
@@ -995,8 +1233,6 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                 X, y = node["data"]
                 depth = node["depth"]
                 split = node["split"]
-                missing = node["missing"]["missing"]
-                missing_only = node["missing"]["missing_only"]
 
                 did_split = False
                 data = None
@@ -1006,30 +1242,19 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     depth >= 0,
                     depth < self.max_depth,
                     X[:, 0].size > 1,
-                    missing_only == False,
                 ]
 
                 if all(stopping_criteria):
-                    if missing:
-                        nans = np.isnan(X).any(axis=1)
-                        X_withoutnans, y_withoutnans = X[~nans], y[~nans]
-                        leafs = split.apply(X_withoutnans)
-                        (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X_withoutnans[np.argwhere(leafs == 1), :]),
-                            y_withoutnans[np.argwhere(leafs == 1)][:, 0],
-                        ), (
-                            np.squeeze(X_withoutnans[np.argwhere(leafs == 2), :]),
-                            y_withoutnans[np.argwhere(leafs == 2)][:, 0],
-                        )
-                    else:
-                        leafs = split.apply(X)
-                        (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X[np.argwhere(leafs == 1), :]),
-                            y[np.argwhere(leafs == 1)][:, 0],
-                        ), (
-                            np.squeeze(X[np.argwhere(leafs == 2), :]),
-                            y[np.argwhere(leafs == 2)][:, 0],
-                        )
+                    leafs = split.apply(X)
+                    leafs_left = leafs == 1
+                    leafs_right = np.invert(leafs_left)
+                    (X_left, y_left), (X_right, y_right) = (
+                        np.squeeze(X[leafs_left, :]),
+                        y[leafs_left],
+                    ), (
+                        np.squeeze(X[leafs_right, :]),
+                        y[leafs_right],
+                    )
 
                     N_left, N_right = y_left.size, y_right.size
 
@@ -1043,33 +1268,9 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
                         if N_left == 1:
                             X_left = X_left.reshape(-1, 1).T
-                            node["missing_side"] = "left"
-                            if missing:
-                                X_left = np.append(X_left, X[nans], axis=0)
-                                y_left = np.append(y_left, y[nans], axis=0)
 
                         if N_right == 1:
                             X_right = X_right.reshape(-1, 1).T
-                            if N_left > 1:
-                                node["missing_side"] = "right"
-                                if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append(y_right, y[nans], axis=0)
-
-                        score_conditions = [N_left > 1, N_right > 1]
-                        if all(score_conditions):
-                            if split.score(X_left, y_left) > split.score(
-                                X_right, y_right
-                            ):
-                                node["missing_side"] = "left"
-                                if missing:
-                                    X_left = np.append(X_left, X[nans], axis=0)
-                                    y_left = np.append(y_left, y[nans], axis=0)
-                            else:
-                                node["missing_side"] = "right"
-                                if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append(y_right, y[nans], axis=0)
 
                         data = [(X_left, y_left), (X_right, y_right)]
 
@@ -1130,10 +1331,252 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
             if self.verbose > 0 and self.n_jobs == None:
                 print("\nNew Tree")
             root = _create_node(X, y, 0, container)
-            _split_traverse_node(root, container)
+            Parallel(n_jobs=self.n_jobs, prefer="threads")(
+                delayed(_split_traverse_node)(root, container) for _ in range(1)
+            )
             return root
 
-        self.tree = _build_tree(X, y)
+        def _build_tree_missing(X, y):
+            """Build a LCE tree with missing data."""
+            global index_node_global
+
+            def _create_node_missing(X, y, depth, container):
+                """Create a node in the tree."""
+                # Add XGBoost predictions as features to the dataset
+                model_node = xgb_opt_regressor(
+                    X,
+                    y,
+                    n_iter=self.n_iter,
+                    metric=self.metric,
+                    n_estimators=self.xgb_max_n_estimators,
+                    n_estimators_step=self.xgb_n_estimators_step,
+                    max_depth=self.xgb_max_depth,
+                    min_learning_rate=self.xgb_min_learning_rate,
+                    max_learning_rate=self.xgb_max_learning_rate,
+                    learning_rate_step=self.xgb_learning_rate_step,
+                    booster=self.xgb_booster,
+                    min_gamma=self.xgb_min_gamma,
+                    max_gamma=self.xgb_max_gamma,
+                    gamma_step=self.xgb_gamma_step,
+                    min_min_child_weight=self.xgb_min_min_child_weight,
+                    max_min_child_weight=self.xgb_max_min_child_weight,
+                    min_child_weight_step=self.xgb_min_child_weight_step,
+                    subsample=self.xgb_subsample,
+                    colsample_bytree=self.xgb_colsample_bytree,
+                    colsample_bylevel=self.xgb_colsample_bylevel,
+                    colsample_bynode=self.xgb_colsample_bynode,
+                    min_reg_alpha=self.xgb_min_reg_alpha,
+                    max_reg_alpha=self.xgb_max_reg_alpha,
+                    reg_alpha_step=self.xgb_reg_alpha_step,
+                    min_reg_lambda=self.xgb_min_reg_lambda,
+                    max_reg_lambda=self.xgb_max_reg_lambda,
+                    reg_lambda_step=self.xgb_reg_lambda_step,
+                    n_jobs=self.n_jobs,
+                    random_state=self.random_state,
+                )
+                preds = np.around(model_node.predict(X), 6)
+                X = np.insert(X, X.shape[1], 0, axis=1)
+                X[:, -1] = preds
+
+                # Missing data information
+                nans = np.isnan(X).any(axis=1)
+                num_nans = nans.sum()
+                y_size = y.size
+                if num_nans > 0:
+                    missing = True
+                    if num_nans == y_size:
+                        missing_only = True
+                    else:
+                        missing_only = False
+                else:
+                    missing = False
+                    missing_only = False
+
+                # Split
+                split_val_conditions = [y_size > 1, missing_only == False]
+                if all(split_val_conditions):
+                    split = DecisionTreeRegressor(
+                        criterion=self.criterion,
+                        splitter=self.splitter,
+                        max_depth=1,
+                        max_features=self.max_features,
+                        random_state=self.random_state,
+                    )
+                    if missing:
+                        split.fit(X[~nans], y[~nans])
+                    else:
+                        split.fit(X, y)
+                else:
+                    split = None
+
+                # Node information
+                node = {
+                    "index": container["index_node_global"],
+                    "model": model_node,
+                    "data": (X, y),
+                    "split": split,
+                    "missing": {"missing": missing, "missing_only": missing_only},
+                    "missing_side": None,
+                    "children": {"left": None, "right": None},
+                    "depth": depth,
+                }
+                container["index_node_global"] += 1
+                return node
+
+            def _splitter_missing(node):
+                """Perform the split of a node."""
+                # Extract data
+                X, y = node["data"]
+                depth = node["depth"]
+                split = node["split"]
+                missing = node["missing"]["missing"]
+                missing_only = node["missing"]["missing_only"]
+
+                did_split = False
+                data = None
+
+                # Perform split if the conditions are met
+                stopping_criteria = [
+                    depth >= 0,
+                    depth < self.max_depth,
+                    X[:, 0].size > 1,
+                    missing_only == False,
+                ]
+
+                if all(stopping_criteria):
+                    if missing:
+                        nans = np.isnan(X).any(axis=1)
+                        X_withoutnans, y_withoutnans = X[~nans], y[~nans]
+                        leafs = split.apply(X_withoutnans)
+                        leafs_left = leafs == 1
+                        leafs_right = np.invert(leafs_left)
+                        (X_left, y_left), (X_right, y_right) = (
+                            np.squeeze(X_withoutnans[leafs_left, :]),
+                            y_withoutnans[leafs_left],
+                        ), (
+                            np.squeeze(X_withoutnans[leafs_right, :]),
+                            y_withoutnans[leafs_right],
+                        )
+                    else:
+                        leafs = split.apply(X)
+                        leafs_left = leafs == 1
+                        leafs_right = np.invert(leafs_left)
+                        (X_left, y_left), (X_right, y_right) = (
+                            np.squeeze(X[leafs_left, :]),
+                            y[leafs_left],
+                        ), (
+                            np.squeeze(X[leafs_right, :]),
+                            y[leafs_right],
+                        )
+
+                    N_left, N_right = y_left.size, y_right.size
+
+                    split_conditions = [
+                        N_left >= self.min_samples_leaf,
+                        N_right >= self.min_samples_leaf,
+                    ]
+
+                    if all(split_conditions):
+                        did_split = True
+
+                        if N_left == 1:
+                            X_left = X_left.reshape(-1, 1).T
+                            node["missing_side"] = "left"
+                            if missing:
+                                X_left = np.append(X_left, X[nans], axis=0)
+                                y_left = np.append(y_left, y[nans], axis=0)
+
+                        if N_right == 1:
+                            X_right = X_right.reshape(-1, 1).T
+                            if N_left > 1:
+                                node["missing_side"] = "right"
+                                if missing:
+                                    X_right = np.append(X_right, X[nans], axis=0)
+                                    y_right = np.append(y_right, y[nans], axis=0)
+
+                        score_conditions = [N_left > 1, N_right > 1]
+                        if all(score_conditions):
+                            if split.score(X_left, y_left) > split.score(
+                                X_right, y_right
+                            ):
+                                node["missing_side"] = "left"
+                                if missing:
+                                    X_left = np.append(X_left, X[nans], axis=0)
+                                    y_left = np.append(y_left, y[nans], axis=0)
+                            else:
+                                node["missing_side"] = "right"
+                                if missing:
+                                    X_right = np.append(X_right, X[nans], axis=0)
+                                    y_right = np.append(y_right, y[nans], axis=0)
+
+                        data = [(X_left, y_left), (X_right, y_right)]
+
+                result = {"did_split": did_split, "data": data}
+                return result
+
+            def _split_traverse_node_missing(node, container):
+                """Process splitting results and continue with child nodes."""
+                # Perform split and collect result
+                result = _splitter_missing(node)
+
+                # Return terminal node if no split
+                if not result["did_split"]:
+                    if self.verbose > 0 and self.n_jobs == None:
+                        depth_spacing_str = " ".join([" "] * node["depth"])
+                        print(
+                            " {}*leaf {} @ depth {}: Unique_y {},  N_samples {}".format(
+                                depth_spacing_str,
+                                node["index"],
+                                node["depth"],
+                                np.unique(node["data"][1]),
+                                np.unique(node["data"][1], return_counts=True)[1],
+                            )
+                        )
+                    return
+                del node["data"]
+
+                # Extract splitting results
+                (X_left, y_left), (X_right, y_right) = result["data"]
+
+                # Report created node to user
+                if self.verbose > 0 and self.n_jobs == None:
+                    depth_spacing_str = " ".join([" "] * node["depth"])
+                    print(
+                        " {}node {} @ depth {}: dataset={}, N_left={}, N_right={}".format(
+                            depth_spacing_str,
+                            node["index"],
+                            node["depth"],
+                            (X_left.shape[0] + X_right.shape[0], X_left.shape[1]),
+                            X_left.shape[0],
+                            X_right.shape[0],
+                        )
+                    )
+
+                # Create child nodes
+                node["children"]["left"] = _create_node_missing(
+                    X_left, y_left, node["depth"] + 1, container
+                )
+                node["children"]["right"] = _create_node_missing(
+                    X_right, y_right, node["depth"] + 1, container
+                )
+
+                # Split nodes
+                _split_traverse_node_missing(node["children"]["left"], container)
+                _split_traverse_node_missing(node["children"]["right"], container)
+
+            container = {"index_node_global": 0}
+            if self.verbose > 0 and self.n_jobs == None:
+                print("\nNew Tree")
+            root = _create_node_missing(X, y, 0, container)
+            Parallel(n_jobs=self.n_jobs, prefer="threads")(
+                delayed(_split_traverse_node_missing)(root, container) for _ in range(1)
+            )
+            return root
+
+        if np.isnan(X).any():
+            self.tree = _build_tree_missing(X, y)
+        else:
+            self.tree = _build_tree(X, y)
         return self
 
     def predict(self, X):
@@ -1175,26 +1618,12 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                 return y_pred_final
 
             else:
-                if np.isnan(X).sum() > 0:
-                    nans = np.isnan(X).any(axis=1)
-                    leafs = node["split"].apply(X[~nans, 1:])
-                    X_left, X_right = np.squeeze(
-                        X[~nans][np.argwhere(leafs == 1), :]
-                    ), np.squeeze(X[~nans][np.argwhere(leafs == 2), :])
-                    if node["missing_side"] == "left":
-                        X_left, X_right = (
-                            np.concatenate((X_left, X[nans]), axis=0),
-                            X_right,
-                        )
-                    else:
-                        X_left, X_right = X_left, np.concatenate(
-                            (X_right, X[nans]), axis=0
-                        )
-                else:
-                    leafs = node["split"].apply(X[:, 1:])
-                    X_left, X_right = np.squeeze(
-                        X[np.argwhere(leafs == 1), :]
-                    ), np.squeeze(X[np.argwhere(leafs == 2), :])
+                leafs = node["split"].apply(X[:, 1:])
+                leafs_left = leafs == 1
+                leafs_right = np.invert(leafs_left)
+                X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
+                    X[leafs_right, :]
+                )
 
                 if len(X_left) > 0:
                     y_pred_final = _predict(
@@ -1206,9 +1635,65 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     )
                 return y_pred_final
 
+        def _predict_missing(node, X, y_pred_final=None):
+            if X.ndim == 1:
+                X = _base(node, X.reshape(-1, 1).T)
+            else:
+                X = _base(node, X)
+
+            no_children = (
+                node["children"]["left"] is None and node["children"]["right"] is None
+            )
+            if no_children:
+                y_pred = np.column_stack((X[:, :1], X[:, -1:]))
+                if y_pred_final is not None:
+                    y_pred_final = np.concatenate((y_pred_final, y_pred), axis=0)
+                else:
+                    y_pred_final = y_pred
+                return y_pred_final
+
+            else:
+                nans = np.isnan(X).any(axis=1)
+                if nans:
+                    leafs = node["split"].apply(X[~nans, 1:])
+                    leafs_left = leafs == 1
+                    leafs_right = np.invert(leafs_left)
+                    X_left, X_right = np.squeeze(X[~nans][leafs_left, :]), np.squeeze(
+                        X[~nans][leafs_right, :]
+                    )
+                    if node["missing_side"] == "left":
+                        X_left, X_right = (
+                            np.concatenate((X_left, X[nans]), axis=0),
+                            X_right,
+                        )
+                    else:
+                        X_left, X_right = X_left, np.concatenate(
+                            (X_right, X[nans]), axis=0
+                        )
+                else:
+                    leafs = node["split"].apply(X[:, 1:])
+                    leafs_left = leafs == 1
+                    leafs_right = np.invert(leafs_left)
+                    X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
+                        X[leafs_right, :]
+                    )
+
+                if len(X_left) > 0:
+                    y_pred_final = _predict_missing(
+                        node["children"]["left"], X_left, y_pred_final
+                    )
+                if len(X_right) > 0:
+                    y_pred_final = _predict_missing(
+                        node["children"]["right"], X_right, y_pred_final
+                    )
+                return y_pred_final
+
         index = np.arange(0, X.shape[0]).reshape(-1, 1)
         X = np.concatenate((index, X), axis=1)
-        y_pred = _predict(self.tree, X, None)
+        if np.isnan(X).any():
+            y_pred = _predict_missing(self.tree, X, None)
+        else:
+            y_pred = _predict(self.tree, X, None)
         y_pred = y_pred[y_pred[:, 0].argsort()]
         y_pred = y_pred[:, 1]
         return y_pred
