@@ -2,6 +2,13 @@ name: lce workflow
 
 on: [push, pull_request]
 
+coverage:
+  status:
+    project:
+      default:
+        target: 95%
+        threshold: 5%
+
 jobs:
   build:
     strategy:
