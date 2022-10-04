@@ -27,7 +27,7 @@ for j in range(0, X_train.shape[1]):
     X_train[sub, j] = np.nan
 
 # Train LCERegressor with default parameters
-reg = LCERegressor(n_jobs=-1, random_state=123)
+reg = LCERegressor(n_jobs=-1, random_state=0)
 reg.fit(X_train, y_train)
 
 # Make prediction

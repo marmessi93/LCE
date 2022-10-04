@@ -19,7 +19,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # Train LCERegressor with default parameters
-reg = LCERegressor(n_jobs=-1, random_state=123)
+reg = LCERegressor(n_jobs=-1, random_state=0)
 reg.fit(X_train, y_train)
 
 # Make prediction

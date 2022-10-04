@@ -161,7 +161,7 @@ This example demonstrates the compatibility of LCE with scikit-learn pipelines a
    
 .. code-block::
 	
-	Cross-validation scores on train set:  [92.1, 100.0, 94.6]
+	Cross-validation scores on train set:  [94.7, 100.0, 94.6]
 
 
 Regression
@@ -182,7 +182,7 @@ Regression
 	X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, random_state=0)
 
 	# Train LCERegressor with default parameters
-	reg = LCERegressor(n_jobs=-1, random_state=123)
+	reg = LCERegressor(n_jobs=-1, random_state=0)
 	reg.fit(X_train, y_train)
 
 	# Make prediction 
@@ -192,7 +192,7 @@ Regression
 	
 .. code-block::
 	
-	The mean squared error (MSE) on test set: 3576
+	The mean squared error (MSE) on test set: 3523
 	  
 
 - **Example 4: LCE with missing values**
@@ -219,7 +219,7 @@ This example illustrates the robustness of LCE to missing values. The Diabetes t
 		X_train[sub, j] = np.nan
 
 	# Train LCERegressor with default parameters
-	reg = LCERegressor(n_jobs=-1, random_state=123)
+	reg = LCERegressor(n_jobs=-1, random_state=0)
 	reg.fit(X_train, y_train)
 
 	# Make prediction
@@ -229,7 +229,7 @@ This example illustrates the robustness of LCE to missing values. The Diabetes t
 
 .. code-block::
 	
-	The mean squared error (MSE) on test set: 3736
+	The mean squared error (MSE) on test set: 3910
 	
 
 Python Source Files

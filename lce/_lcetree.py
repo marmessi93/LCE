@@ -44,7 +44,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         valid partition of the node samples is found, even if it requires to
         effectively inspect more than ``max_features`` features.
 
-    min_samples_leaf : int or float, default=5
+    min_samples_leaf : int or float, default=1
         The minimum number of samples required to be at a leaf node.
         A split point at any depth will only be considered if it leaves at
         least ``min_samples_leaf`` training samples in each of the left and
@@ -63,116 +63,82 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         The score of the base classifier (XGBoost) optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    xgb_max_n_estimators : int, default=100
-        The maximum number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds.
+    xgb_n_estimators : list, default=[10, 50, 100]
+        The number of XGBoost estimators. The number of estimators of
+        XGBoost corresponds to the number of boosting rounds. The list is
+        the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_n_estimators_step : int, default=10
-        Spacing between XGBoost n_estimators. The range of XGBoost n_estimators
-        for hyperparameter optimization (Hyperopt) is:
-        range(1, xgb_max_n_estimators+xgb_n_estimators_step, xgb_n_estimators_step).
+    xgb_max_depth : list, default=[3, 6, 9]
+        Maximum tree depth for XGBoost base learners. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_max_depth : int, default=10
-        Maximum tree depth for XGBoost base learners. The range of XGBoost max_depth
-        for Hyperopt is: range(1, xgb_max_depth+1).
-
-    xgb_min_learning_rate : float, default=0.05
-        Minimum learning rate of XGBoost. The learning rate corresponds to the
+    xgb_learning_rate : list, default=[0.01, 0.1, 0.3, 0.5]
+        `learning_rate` of XGBoost. The learning rate corresponds to the
         step size shrinkage used in update to prevent overfitting. After each
-        boosting step, we can directly get the weights of new features,
-        and the learning rate shrinks the feature weights to make the boosting
-        process more conservative.
+        boosting step, the learning rate shrinks the feature weights to make the boosting
+        process more conservative. The list is the search space used for the
+        hyperparameter optimization (Hyperopt).
 
-    xgb_max_learning_rate : float, default=0.5
-        Maximum learning rate of XGBoost.
-
-    xgb_learning_rate_step : float, default=0.05
-        Spacing between XGBoost learning_rate. The range of XGBoost learning_rate
-        for hyperparameter optimization (Hyperopt) is:
-        np.arange(xgb_min_learning_rate, xgb_max_learning_rate+xgb_learning_rate_step, xgb_learning_rate_step).
-
-    xgb_booster : {"dart", "gblinear", "gbtree"}, default="gbtree"
+    xgb_booster : ["dart", "gblinear", "gbtree"], default=["gbtree"]
         The type of booster to use. "gbtree" and "dart" use tree based models
-        while "gblinear" uses linear functions.
+        while "gblinear" uses linear functions. The list is the search space used
+        for the hyperparameter optimization (Hyperopt).
 
-    xgb_min_gamma : float, default=0.05
-        Minimum gamma of XGBoost. Gamma corresponds to the minimum loss reduction
+    xgb_gamma : list, default=[0, 1, 10]
+        'gamma' of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
-        The larger gamma is, the more conservative XGBoost algorithm will be.
+        The larger `gamma` is, the more conservative XGBoost algorithm will be.
+        The list is the search space used for the hyperparameter optimization
+        (Hyperopt).
 
-    xgb_max_gamma : float, default=0.5
-        Maximum gamma of XGBoost.
-
-    xgb_gamma_step : float, default=0.05,
-        Spacing between XGBoost gamma. The range of XGBoost gamma for hyperparameter
-        optimization (Hyperopt) is:
-        np.arange(xgb_min_gamma, xgb_max_gamma+xgb_gamma_step, xgb_gamma_step).
-
-    xgb_min_min_child_weight : int, default=3
-        Minimum min_child_weight of XGBoost. min_child_weight defines the
+    xgb_min_child_weight : list, default=[1, 5, 15, 100]
+        `min_child_weight` of XGBoost. `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
-        less than min_child_weight, then the building process will give up further
-        partitioning. The larger min_child_weight is, the more conservative XGBoost
-        algorithm will be.
+        less than `min_child_weight`, then the building process will give up further
+        partitioning. The larger `min_child_weight` is, the more conservative XGBoost
+        algorithm will be. The list is the search space used for the hyperparameter
+        optimization (Hyperopt).
 
-    xgb_max_min_child_weight : int, default=10
-        Minimum min_child_weight of XGBoost.
-
-    xgb_min_child_weight_step : int, default=1,
-        Spacing between XGBoost min_child_weight. The range of XGBoost min_child_weight
-        for hyperparameter optimization (Hyperopt) is:
-        range(xgb_min_min_child_weight, xgb_max_min_child_weight+xgb_min_child_weight_step, xgb_min_child_weight_step).
-
-    xgb_subsample : float, default=0.8
+    xgb_subsample : list, default=[1.0]
         XGBoost subsample ratio of the training instances. Setting it to 0.5 means
         that XGBoost would randomly sample half of the training data prior to
-        growing trees. and this will prevent overfitting. Subsampling will occur
-        once in every boosting iteration.
+        growing trees, and this will prevent overfitting. Subsampling will occur
+        once in every boosting iteration. The list is the search space used for
+        the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bytree : float, default=0.8
+    xgb_colsample_bytree : list, default=[1.0]
         XGBoost subsample ratio of columns when constructing each tree.
-        Subsampling occurs once for every tree constructed.
+        Subsampling occurs once for every tree constructed. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bylevel : float, default=1.0
+    xgb_colsample_bylevel : list, default=[1.0]
         XGBoost subsample ratio of columns for each level. Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
-        from the set of columns chosen for the current tree.
+        from the set of columns chosen for the current tree. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bynode : float, default=1.0
+    xgb_colsample_bynode : list, default=[1.0]
         XGBoost subsample ratio of columns for each node (split). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
-        from the set of columns chosen for the current level.
+        from the set of columns chosen for the current level. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_min_reg_alpha : float, default=0.01
-        Minimum reg_alpha of XGBoost. reg_alpha corresponds to the L1 regularization
+    xgb_reg_alpha : list, default=[0]
+        `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative.
+        conservative. The list is the search space used for the hyperparameter
+        optimization (Hyperopt).
 
-    xgb_max_reg_alpha : float, default=0.1
-        Maximum reg_alpha of XGBoost.
-
-    xgb_reg_alpha_step : float, default=0.05
-        Spacing between XGBoost reg_alpha. The range of XGBoost reg_alpha for
-        hyperparameter optimization (Hyperopt) is:
-        np.arange(xgb_min_reg_alpha, xgb_max_reg_alpha+xgb_reg_alpha_step, xgb_reg_alpha_step).
-
-    xgb_min_reg_lambda : float, default=0.01
-        Minimum reg_lambda of XGBoost. reg_lambda corresponds to the L2 regularization
+    xgb_reg_lambda : list, default=[0.1, 1.0, 5.0]
+        `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative.
-
-    xgb_max_reg_lambda : float, default=0.1
-        Maximum reg_lambda of XGBoost.
-
-    xgb_reg_lambda_step : float, default=0.05
-        Spacing between XGBoost reg_lambda. The range of XGBoost reg_lambda for
-        hyperparameter optimization (Hyperopt) is:
-        np.arange(xgb_min_reg_lambda, xgb_max_reg_lambda+xgb_reg_lambda_step, xgb_reg_lambda_step).
+        conservative. The list is the search space used for the hyperparameter
+        optimization (Hyperopt).
 
     n_jobs : int, default=None
         The number of jobs to run in parallel.
-        ``None`` means 1. ``-1`` means using all processors.
+        ``n_jobs=None`` means 1. ``n_jobs=-1`` means using all processors.
 
     random_state : int, RandomState instance or None, default=None
         Controls the randomness of the sampling of the features to consider when
@@ -198,32 +164,21 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         splitter="best",
         max_depth=2,
         max_features=None,
-        min_samples_leaf=5,
+        min_samples_leaf=1,
         n_iter=10,
         metric="accuracy",
-        xgb_max_n_estimators=100,
-        xgb_n_estimators_step=10,
-        xgb_max_depth=10,
-        xgb_min_learning_rate=0.05,
-        xgb_max_learning_rate=0.5,
-        xgb_learning_rate_step=0.05,
-        xgb_booster="gbtree",
-        xgb_min_gamma=0.05,
-        xgb_max_gamma=0.5,
-        xgb_gamma_step=0.05,
-        xgb_min_min_child_weight=3,
-        xgb_max_min_child_weight=10,
-        xgb_min_child_weight_step=1,
-        xgb_subsample=0.8,
-        xgb_colsample_bytree=0.8,
-        xgb_colsample_bylevel=1.0,
-        xgb_colsample_bynode=1.0,
-        xgb_min_reg_alpha=0.01,
-        xgb_max_reg_alpha=0.1,
-        xgb_reg_alpha_step=0.05,
-        xgb_min_reg_lambda=0.01,
-        xgb_max_reg_lambda=0.1,
-        xgb_reg_lambda_step=0.05,
+        xgb_n_estimators=[10, 50, 100],
+        xgb_max_depth=[3, 6, 9],
+        xgb_learning_rate=[0.01, 0.1, 0.3, 0.5],
+        xgb_booster=["gbtree"],
+        xgb_gamma=[0, 1, 10],
+        xgb_min_child_weight=[1, 5, 15, 100],
+        xgb_subsample=[1.0],
+        xgb_colsample_bytree=[1.0],
+        xgb_colsample_bylevel=[1.0],
+        xgb_colsample_bynode=[1.0],
+        xgb_reg_alpha=[0],
+        xgb_reg_lambda=[0.1, 1.0, 5.0],
         n_jobs=None,
         random_state=None,
         verbose=0,
@@ -236,29 +191,18 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         self.min_samples_leaf = min_samples_leaf
         self.n_iter = n_iter
         self.metric = metric
-        self.xgb_max_n_estimators = xgb_max_n_estimators
-        self.xgb_n_estimators_step = xgb_n_estimators_step
+        self.xgb_n_estimators = xgb_n_estimators
         self.xgb_max_depth = xgb_max_depth
-        self.xgb_min_learning_rate = xgb_min_learning_rate
-        self.xgb_max_learning_rate = xgb_max_learning_rate
-        self.xgb_learning_rate_step = xgb_learning_rate_step
+        self.xgb_learning_rate = xgb_learning_rate
         self.xgb_booster = xgb_booster
-        self.xgb_min_gamma = xgb_min_gamma
-        self.xgb_max_gamma = xgb_max_gamma
-        self.xgb_gamma_step = xgb_gamma_step
-        self.xgb_min_min_child_weight = xgb_min_min_child_weight
-        self.xgb_max_min_child_weight = xgb_max_min_child_weight
-        self.xgb_min_child_weight_step = xgb_min_child_weight_step
+        self.xgb_gamma = xgb_gamma
+        self.xgb_min_child_weight = xgb_min_child_weight
         self.xgb_subsample = xgb_subsample
         self.xgb_colsample_bytree = xgb_colsample_bytree
         self.xgb_colsample_bylevel = xgb_colsample_bylevel
         self.xgb_colsample_bynode = xgb_colsample_bynode
-        self.xgb_min_reg_alpha = xgb_min_reg_alpha
-        self.xgb_max_reg_alpha = xgb_max_reg_alpha
-        self.xgb_reg_alpha_step = xgb_reg_alpha_step
-        self.xgb_min_reg_lambda = xgb_min_reg_lambda
-        self.xgb_max_reg_lambda = xgb_max_reg_lambda
-        self.xgb_reg_lambda_step = xgb_reg_lambda_step
+        self.xgb_reg_alpha = xgb_reg_alpha
+        self.xgb_reg_lambda = xgb_reg_lambda
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
@@ -294,29 +238,18 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     y,
                     n_iter=self.n_iter,
                     metric=self.metric,
-                    n_estimators=self.xgb_max_n_estimators,
-                    n_estimators_step=self.xgb_n_estimators_step,
+                    n_estimators=self.xgb_n_estimators,
                     max_depth=self.xgb_max_depth,
-                    min_learning_rate=self.xgb_min_learning_rate,
-                    max_learning_rate=self.xgb_max_learning_rate,
-                    learning_rate_step=self.xgb_learning_rate_step,
+                    learning_rate=self.xgb_learning_rate,
                     booster=self.xgb_booster,
-                    min_gamma=self.xgb_min_gamma,
-                    max_gamma=self.xgb_max_gamma,
-                    gamma_step=self.xgb_gamma_step,
-                    min_min_child_weight=self.xgb_min_min_child_weight,
-                    max_min_child_weight=self.xgb_max_min_child_weight,
-                    min_child_weight_step=self.xgb_min_child_weight_step,
+                    gamma=self.xgb_gamma,
+                    min_child_weight=self.xgb_min_child_weight,
                     subsample=self.xgb_subsample,
                     colsample_bytree=self.xgb_colsample_bytree,
                     colsample_bylevel=self.xgb_colsample_bylevel,
                     colsample_bynode=self.xgb_colsample_bynode,
-                    min_reg_alpha=self.xgb_min_reg_alpha,
-                    max_reg_alpha=self.xgb_max_reg_alpha,
-                    reg_alpha_step=self.xgb_reg_alpha_step,
-                    min_reg_lambda=self.xgb_min_reg_lambda,
-                    max_reg_lambda=self.xgb_max_reg_lambda,
-                    reg_lambda_step=self.xgb_reg_lambda_step,
+                    reg_alpha=self.xgb_reg_alpha,
+                    reg_lambda=self.xgb_reg_lambda,
                     n_jobs=self.n_jobs,
                     random_state=self.random_state,
                 )
@@ -480,29 +413,18 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     y,
                     n_iter=self.n_iter,
                     metric=self.metric,
-                    n_estimators=self.xgb_max_n_estimators,
-                    n_estimators_step=self.xgb_n_estimators_step,
+                    n_estimators=self.xgb_n_estimators,
                     max_depth=self.xgb_max_depth,
-                    min_learning_rate=self.xgb_min_learning_rate,
-                    max_learning_rate=self.xgb_max_learning_rate,
-                    learning_rate_step=self.xgb_learning_rate_step,
+                    learning_rate=self.xgb_learning_rate,
                     booster=self.xgb_booster,
-                    min_gamma=self.xgb_min_gamma,
-                    max_gamma=self.xgb_max_gamma,
-                    gamma_step=self.xgb_gamma_step,
-                    min_min_child_weight=self.xgb_min_min_child_weight,
-                    max_min_child_weight=self.xgb_max_min_child_weight,
-                    min_child_weight_step=self.xgb_min_child_weight_step,
+                    gamma=self.xgb_gamma,
+                    min_child_weight=self.xgb_min_child_weight,
                     subsample=self.xgb_subsample,
                     colsample_bytree=self.xgb_colsample_bytree,
                     colsample_bylevel=self.xgb_colsample_bylevel,
                     colsample_bynode=self.xgb_colsample_bynode,
-                    min_reg_alpha=self.xgb_min_reg_alpha,
-                    max_reg_alpha=self.xgb_max_reg_alpha,
-                    reg_alpha_step=self.xgb_reg_alpha_step,
-                    min_reg_lambda=self.xgb_min_reg_lambda,
-                    max_reg_lambda=self.xgb_max_reg_lambda,
-                    reg_lambda_step=self.xgb_reg_lambda_step,
+                    reg_alpha=self.xgb_reg_alpha,
+                    reg_lambda=self.xgb_reg_lambda,
                     n_jobs=self.n_jobs,
                     random_state=self.random_state,
                 )
@@ -906,7 +828,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         valid partition of the node samples is found, even if it requires to
         effectively inspect more than ``max_features`` features.
 
-    min_samples_leaf : int or float, default=5
+    min_samples_leaf : int or float, default=1
         The minimum number of samples required to be at a leaf node.
         A split point at any depth will only be considered if it leaves at
         least ``min_samples_leaf`` training samples in each of the left and
@@ -925,116 +847,82 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         The score of the base regressor (XGBoost) optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    xgb_max_n_estimators : int, default=100
-        The maximum number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds.
+    xgb_n_estimators : list, default=[10, 50, 100]
+        The number of XGBoost estimators. The number of estimators of
+        XGBoost corresponds to the number of boosting rounds. The list is
+        the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_n_estimators_step : int, default=10
-        Spacing between XGBoost n_estimators. The range of XGBoost n_estimators
-        for hyperparameter optimization (Hyperopt) is:
-        range(1, xgb_max_n_estimators+xgb_n_estimators_step, xgb_n_estimators_step).
+    xgb_max_depth : list, default=[3, 6, 9]
+        Maximum tree depth for XGBoost base learners. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_max_depth : int, default= 10
-        Maximum tree depth for XGBoost base learners. The range of XGBoost max_depth
-        for Hyperopt is: range(1, xgb_max_depth+1).
-
-    xgb_min_learning_rate : float, default=0.05
-        Minimum learning rate of XGBoost. The learning rate corresponds to the
+    xgb_learning_rate : list, default=[0.01, 0.1, 0.3, 0.5]
+        `learning_rate` of XGBoost. The learning rate corresponds to the
         step size shrinkage used in update to prevent overfitting. After each
-        boosting step, we can directly get the weights of new features,
-        and the learning rate shrinks the feature weights to make the boosting
-        process more conservative.
+        boosting step, the learning rate shrinks the feature weights to make the boosting
+        process more conservative. The list is the search space used for the
+        hyperparameter optimization (Hyperopt).
 
-    xgb_max_learning_rate : float, default=0.5
-        Maximum learning rate of XGBoost.
-
-    xgb_learning_rate_step : float, default=0.05
-        Spacing between XGBoost learning_rate. The range of XGBoost learning_rate
-        for hyperparameter optimization (Hyperopt) is:
-        np.arange(xgb_min_learning_rate, xgb_max_learning_rate+xgb_learning_rate_step, xgb_learning_rate_step).
-
-    xgb_booster : {"dart", "gblinear", "gbtree"}, default="gbtree"
+    xgb_booster : ["dart", "gblinear", "gbtree"], default=["gbtree"]
         The type of booster to use. "gbtree" and "dart" use tree based models
-        while "gblinear" uses linear functions.
+        while "gblinear" uses linear functions. The list is the search space used
+        for the hyperparameter optimization (Hyperopt).
 
-    xgb_min_gamma : float, default=0.05
-        Minimum gamma of XGBoost. Gamma corresponds to the minimum loss reduction
+    xgb_gamma : list, default=[0, 1, 10]
+        'gamma' of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
-        The larger gamma is, the more conservative XGBoost algorithm will be.
+        The larger `gamma` is, the more conservative XGBoost algorithm will be.
+        The list is the search space used for the hyperparameter optimization
+        (Hyperopt).
 
-    xgb_max_gamma : float, default=0.5
-        Maximum gamma of XGBoost.
-
-    xgb_gamma_step : float, default=0.05,
-        Spacing between XGBoost gamma. The range of XGBoost gamma for hyperparameter
-        optimization (Hyperopt) is:
-        np.arange(xgb_min_gamma, xgb_max_gamma+xgb_gamma_step, xgb_gamma_step).
-
-    xgb_min_min_child_weight : int, default=3
-        Minimum min_child_weight of XGBoost. min_child_weight defines the
+    xgb_min_child_weight : list, default=[1, 5, 15, 100]
+        `min_child_weight` of XGBoost. `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
-        less than min_child_weight, then the building process will give up further
-        partitioning. The larger min_child_weight is, the more conservative XGBoost
-        algorithm will be.
+        less than `min_child_weight`, then the building process will give up further
+        partitioning. The larger `min_child_weight` is, the more conservative XGBoost
+        algorithm will be. The list is the search space used for the hyperparameter
+        optimization (Hyperopt).
 
-    xgb_max_min_child_weight : int, default=10
-        Minimum min_child_weight of XGBoost.
-
-    xgb_min_child_weight_step : int, default=1,
-        Spacing between XGBoost min_child_weight. The range of XGBoost min_child_weight
-        for hyperparameter optimization (Hyperopt) is:
-        range(xgb_min_min_child_weight, xgb_max_min_child_weight+xgb_min_child_weight_step, xgb_min_child_weight_step).
-
-    xgb_subsample : float, default=0.8
+    xgb_subsample : list, default=[1.0]
         XGBoost subsample ratio of the training instances. Setting it to 0.5 means
         that XGBoost would randomly sample half of the training data prior to
-        growing trees. and this will prevent overfitting. Subsampling will occur
-        once in every boosting iteration.
+        growing trees, and this will prevent overfitting. Subsampling will occur
+        once in every boosting iteration. The list is the search space used for
+        the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bytree : float, default=0.8
+    xgb_colsample_bytree : list, default=[1.0]
         XGBoost subsample ratio of columns when constructing each tree.
-        Subsampling occurs once for every tree constructed.
+        Subsampling occurs once for every tree constructed. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bylevel : float, default=1.0
+    xgb_colsample_bylevel : list, default=[1.0]
         XGBoost subsample ratio of columns for each level. Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
-        from the set of columns chosen for the current tree.
+        from the set of columns chosen for the current tree. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bynode : float, default=1.0
+    xgb_colsample_bynode : list, default=[1.0]
         XGBoost subsample ratio of columns for each node (split). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
-        from the set of columns chosen for the current level.
+        from the set of columns chosen for the current level. The list is the search
+        space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_min_reg_alpha : float, default=0.01
-        Minimum reg_alpha of XGBoost. reg_alpha corresponds to the L1 regularization
+    xgb_reg_alpha : list, default=[0]
+        `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative.
+        conservative. The list is the search space used for the hyperparameter
+        optimization (Hyperopt).
 
-    xgb_max_reg_alpha : float, default=0.1
-        Maximum reg_alpha of XGBoost.
-
-    xgb_reg_alpha_step : float, default=0.05
-        Spacing between XGBoost reg_alpha. The range of XGBoost reg_alpha for
-        hyperparameter optimization (Hyperopt) is:
-        np.arange(xgb_min_reg_alpha, xgb_max_reg_alpha+xgb_reg_alpha_step, xgb_reg_alpha_step).
-
-    xgb_min_reg_lambda : float, default=0.01
-        Minimum reg_lambda of XGBoost. reg_lambda corresponds to the L2 regularization
+    xgb_reg_lambda : list, default=[0.1, 1.0, 5.0]
+        `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative.
-
-    xgb_max_reg_lambda : float, default=0.1
-        Maximum reg_lambda of XGBoost.
-
-    xgb_reg_lambda_step : float, default=0.05
-        Spacing between XGBoost reg_lambda. The range of XGBoost reg_lambda for
-        hyperparameter optimization (Hyperopt) is:
-        np.arange(xgb_min_reg_lambda, xgb_max_reg_lambda+xgb_reg_lambda_step, xgb_reg_lambda_step).
+        conservative. The list is the search space used for the hyperparameter
+        optimization (Hyperopt).
 
     n_jobs : int, default=None
         The number of jobs to run in parallel.
-        ``None`` means 1. ``-1`` means using all processors.
+        ``n_jobs=None`` means 1. ``n_jobs=-1`` means using all processors.
 
     random_state : int, RandomState instance or None, default=None
         Controls the randomness of the sampling of the features to consider when
@@ -1056,32 +944,21 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         splitter="best",
         max_depth=2,
         max_features=None,
-        min_samples_leaf=5,
+        min_samples_leaf=1,
         n_iter=10,
         metric="neg_mean_squared_error",
-        xgb_max_n_estimators=100,
-        xgb_n_estimators_step=10,
-        xgb_max_depth=10,
-        xgb_min_learning_rate=0.05,
-        xgb_max_learning_rate=0.5,
-        xgb_learning_rate_step=0.05,
-        xgb_booster="gbtree",
-        xgb_min_gamma=0.05,
-        xgb_max_gamma=0.5,
-        xgb_gamma_step=0.05,
-        xgb_min_min_child_weight=3,
-        xgb_max_min_child_weight=10,
-        xgb_min_child_weight_step=1,
-        xgb_subsample=0.8,
-        xgb_colsample_bytree=0.8,
-        xgb_colsample_bylevel=1.0,
-        xgb_colsample_bynode=1.0,
-        xgb_min_reg_alpha=0.01,
-        xgb_max_reg_alpha=0.1,
-        xgb_reg_alpha_step=0.05,
-        xgb_min_reg_lambda=0.01,
-        xgb_max_reg_lambda=0.1,
-        xgb_reg_lambda_step=0.05,
+        xgb_n_estimators=[10, 50, 100],
+        xgb_max_depth=[3, 6, 9],
+        xgb_learning_rate=[0.01, 0.1, 0.3, 0.5],
+        xgb_booster=["gbtree"],
+        xgb_gamma=[0, 1, 10],
+        xgb_min_child_weight=[1, 5, 15, 100],
+        xgb_subsample=[1.0],
+        xgb_colsample_bytree=[1.0],
+        xgb_colsample_bylevel=[1.0],
+        xgb_colsample_bynode=[1.0],
+        xgb_reg_alpha=[0],
+        xgb_reg_lambda=[0.1, 1.0, 5.0],
         n_jobs=None,
         random_state=None,
         verbose=0,
@@ -1093,29 +970,18 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         self.min_samples_leaf = min_samples_leaf
         self.n_iter = n_iter
         self.metric = metric
-        self.xgb_max_n_estimators = xgb_max_n_estimators
-        self.xgb_n_estimators_step = xgb_n_estimators_step
+        self.xgb_n_estimators = xgb_n_estimators
         self.xgb_max_depth = xgb_max_depth
-        self.xgb_min_learning_rate = xgb_min_learning_rate
-        self.xgb_max_learning_rate = xgb_max_learning_rate
-        self.xgb_learning_rate_step = xgb_learning_rate_step
+        self.xgb_learning_rate = xgb_learning_rate
         self.xgb_booster = xgb_booster
-        self.xgb_min_gamma = xgb_min_gamma
-        self.xgb_max_gamma = xgb_max_gamma
-        self.xgb_gamma_step = xgb_gamma_step
-        self.xgb_min_min_child_weight = xgb_min_min_child_weight
-        self.xgb_max_min_child_weight = xgb_max_min_child_weight
-        self.xgb_min_child_weight_step = xgb_min_child_weight_step
+        self.xgb_gamma = xgb_gamma
+        self.xgb_min_child_weight = xgb_min_child_weight
         self.xgb_subsample = xgb_subsample
         self.xgb_colsample_bytree = xgb_colsample_bytree
         self.xgb_colsample_bylevel = xgb_colsample_bylevel
         self.xgb_colsample_bynode = xgb_colsample_bynode
-        self.xgb_min_reg_alpha = xgb_min_reg_alpha
-        self.xgb_max_reg_alpha = xgb_max_reg_alpha
-        self.xgb_reg_alpha_step = xgb_reg_alpha_step
-        self.xgb_min_reg_lambda = xgb_min_reg_lambda
-        self.xgb_max_reg_lambda = xgb_max_reg_lambda
-        self.xgb_reg_lambda_step = xgb_reg_lambda_step
+        self.xgb_reg_alpha = xgb_reg_alpha
+        self.xgb_reg_lambda = xgb_reg_lambda
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
@@ -1150,29 +1016,18 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     y,
                     n_iter=self.n_iter,
                     metric=self.metric,
-                    n_estimators=self.xgb_max_n_estimators,
-                    n_estimators_step=self.xgb_n_estimators_step,
+                    n_estimators=self.xgb_n_estimators,
                     max_depth=self.xgb_max_depth,
-                    min_learning_rate=self.xgb_min_learning_rate,
-                    max_learning_rate=self.xgb_max_learning_rate,
-                    learning_rate_step=self.xgb_learning_rate_step,
+                    learning_rate=self.xgb_learning_rate,
                     booster=self.xgb_booster,
-                    min_gamma=self.xgb_min_gamma,
-                    max_gamma=self.xgb_max_gamma,
-                    gamma_step=self.xgb_gamma_step,
-                    min_min_child_weight=self.xgb_min_min_child_weight,
-                    max_min_child_weight=self.xgb_max_min_child_weight,
-                    min_child_weight_step=self.xgb_min_child_weight_step,
+                    gamma=self.xgb_gamma,
+                    min_child_weight=self.xgb_min_child_weight,
                     subsample=self.xgb_subsample,
                     colsample_bytree=self.xgb_colsample_bytree,
                     colsample_bylevel=self.xgb_colsample_bylevel,
                     colsample_bynode=self.xgb_colsample_bynode,
-                    min_reg_alpha=self.xgb_min_reg_alpha,
-                    max_reg_alpha=self.xgb_max_reg_alpha,
-                    reg_alpha_step=self.xgb_reg_alpha_step,
-                    min_reg_lambda=self.xgb_min_reg_lambda,
-                    max_reg_lambda=self.xgb_max_reg_lambda,
-                    reg_lambda_step=self.xgb_reg_lambda_step,
+                    reg_alpha=self.xgb_reg_alpha,
+                    reg_lambda=self.xgb_reg_lambda,
                     n_jobs=self.n_jobs,
                     random_state=self.random_state,
                 )
@@ -1321,29 +1176,18 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     y,
                     n_iter=self.n_iter,
                     metric=self.metric,
-                    n_estimators=self.xgb_max_n_estimators,
-                    n_estimators_step=self.xgb_n_estimators_step,
+                    n_estimators=self.xgb_n_estimators,
                     max_depth=self.xgb_max_depth,
-                    min_learning_rate=self.xgb_min_learning_rate,
-                    max_learning_rate=self.xgb_max_learning_rate,
-                    learning_rate_step=self.xgb_learning_rate_step,
+                    learning_rate=self.xgb_learning_rate,
                     booster=self.xgb_booster,
-                    min_gamma=self.xgb_min_gamma,
-                    max_gamma=self.xgb_max_gamma,
-                    gamma_step=self.xgb_gamma_step,
-                    min_min_child_weight=self.xgb_min_min_child_weight,
-                    max_min_child_weight=self.xgb_max_min_child_weight,
-                    min_child_weight_step=self.xgb_min_child_weight_step,
+                    gamma=self.xgb_gamma,
+                    min_child_weight=self.xgb_min_child_weight,
                     subsample=self.xgb_subsample,
                     colsample_bytree=self.xgb_colsample_bytree,
                     colsample_bylevel=self.xgb_colsample_bylevel,
                     colsample_bynode=self.xgb_colsample_bynode,
-                    min_reg_alpha=self.xgb_min_reg_alpha,
-                    max_reg_alpha=self.xgb_max_reg_alpha,
-                    reg_alpha_step=self.xgb_reg_alpha_step,
-                    min_reg_lambda=self.xgb_min_reg_lambda,
-                    max_reg_lambda=self.xgb_max_reg_lambda,
-                    reg_lambda_step=self.xgb_reg_lambda_step,
+                    reg_alpha=self.xgb_reg_alpha,
+                    reg_lambda=self.xgb_reg_lambda,
                     n_jobs=self.n_jobs,
                     random_state=self.random_state,
                 )
