@@ -388,11 +388,11 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     leafs_right = np.invert(leafs_left)
 
                     (X_left, y_left), (X_right, y_right) = (
-                        np.squeeze(X[leafs_left]),
-                        np.squeeze(y[leafs_left]),
+                        X[leafs_left],
+                        y[leafs_left],
                     ), (
-                        np.squeeze(X[leafs_right]),
-                        np.squeeze(y[leafs_right]),
+                        X[leafs_right],
+                        y[leafs_right],
                     )
 
                     N_left, N_right = y_left.size, y_right.size
@@ -404,13 +404,6 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
 
                     if all(split_conditions):
                         did_split = True
-
-                        if N_left == 1:
-                            X_left = X_left.reshape(-1, 1).T
-
-                        if N_right == 1:
-                            X_right = X_right.reshape(-1, 1).T
-
                         data = [(X_left, y_left), (X_right, y_right)]
 
                 result = {"did_split": did_split, "data": data}
@@ -604,11 +597,11 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                         leafs_left = leafs == 1
                         leafs_right = np.invert(leafs_left)
                         (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X_withoutnans[leafs_left, :]),
-                            np.squeeze(y_withoutnans[leafs_left]),
+                            X_withoutnans[leafs_left, :],
+                            y_withoutnans[leafs_left],
                         ), (
-                            np.squeeze(X_withoutnans[leafs_right, :]),
-                            np.squeeze(y_withoutnans[leafs_right]),
+                            X_withoutnans[leafs_right, :],
+                            y_withoutnans[leafs_right],
                         )
                     else:
                         leafs = split.apply(X)
@@ -616,11 +609,11 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                         leafs_right = np.invert(leafs_left)
 
                         (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X[leafs_left, :]),
-                            np.squeeze(y[leafs_left]),
+                            X[leafs_left, :],
+                            y[leafs_left],
                         ), (
-                            np.squeeze(X[leafs_right, :]),
-                            np.squeeze(y[leafs_right]),
+                            X[leafs_right, :],
+                            y[leafs_right],
                         )
 
                     N_left, N_right = y_left.size, y_right.size
@@ -634,19 +627,17 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                         did_split = True
 
                         if N_left == 1:
-                            X_left = X_left.reshape(-1, 1).T
                             node["missing_side"] = "left"
                             if missing:
-                                X_left = np.append(X_left, X[nans], axis=0)
-                                y_left = np.append([y_left], y[nans], axis=0)
+                                X_left = np.concatenate([X_left, X[nans]], axis=0)
+                                y_left = np.concatenate([y_left, y[nans]], axis=0)
 
                         if N_right == 1:
-                            X_right = X_right.reshape(-1, 1).T
                             if N_left > 1:
                                 node["missing_side"] = "right"
                                 if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append([y_right], y[nans], axis=0)
+                                    X_right = np.concatenate([X_right, X[nans]], axis=0)
+                                    y_right = np.concatenate([y_right, y[nans]], axis=0)
 
                         score_conditions = [N_left > 1, N_right > 1]
                         if all(score_conditions):
@@ -655,13 +646,13 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                             ):
                                 node["missing_side"] = "left"
                                 if missing:
-                                    X_left = np.append(X_left, X[nans], axis=0)
-                                    y_left = np.append(y_left, y[nans], axis=0)
+                                    X_left = np.concatenate([X_left, X[nans]], axis=0)
+                                    y_left = np.concatenate([y_left, y[nans]], axis=0)
                             else:
                                 node["missing_side"] = "right"
                                 if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append(y_right, y[nans], axis=0)
+                                    X_right = np.concatenate([X_right, X[nans]], axis=0)
+                                    y_right = np.concatenate([y_right, y[nans]], axis=0)
 
                         data = [(X_left, y_left), (X_right, y_right)]
 
@@ -763,10 +754,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
             return X
 
         def _predict_proba(node, X, y_pred_final=None):
-            if X.ndim == 1:
-                X = _base_proba(node, X.reshape(-1, 1).T)
-            else:
-                X = _base_proba(node, X)
+            X = _base_proba(node, X)
 
             no_children = (
                 node["children"]["left"] is None and node["children"]["right"] is None
@@ -784,9 +772,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 leafs_left = leafs == 1
                 leafs_right = np.invert(leafs_left)
 
-                X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
-                    X[leafs_right, :]
-                )
+                X_left, X_right = X[leafs_left, :], X[leafs_right, :]
 
                 if len(X_left) > 0:
                     y_pred_final = _predict_proba(
@@ -799,10 +785,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 return y_pred_final
 
         def _predict_proba_missing(node, X, y_pred_final=None):
-            if X.ndim == 1:
-                X = _base_proba(node, X.reshape(-1, 1).T)
-            else:
-                X = _base_proba(node, X)
+            X = _base_proba(node, X)
 
             no_children = (
                 node["children"]["left"] is None and node["children"]["right"] is None
@@ -822,9 +805,8 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     leafs_left = leafs == 1
                     leafs_right = np.invert(leafs_left)
 
-                    X_left, X_right = np.squeeze(X[~nans][leafs_left, :]), np.squeeze(
-                        X[~nans][leafs_right, :]
-                    )
+                    X_left, X_right = X[~nans][leafs_left, :], X[~nans][leafs_right, :]
+
                     if node["missing_side"] == "left":
                         X_left, X_right = (
                             np.concatenate((X_left, X[nans]), axis=0),
@@ -839,9 +821,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                     leafs_left = leafs == 1
                     leafs_right = np.invert(leafs_left)
 
-                    X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
-                        X[leafs_right, :]
-                    )
+                    X_left, X_right = X[leafs_left, :], X[leafs_right, :]
 
                 if len(X_left) > 0:
                     y_pred_final = _predict_proba_missing(
@@ -1249,10 +1229,10 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     leafs_left = leafs == 1
                     leafs_right = np.invert(leafs_left)
                     (X_left, y_left), (X_right, y_right) = (
-                        np.squeeze(X[leafs_left, :]),
+                        X[leafs_left, :],
                         y[leafs_left],
                     ), (
-                        np.squeeze(X[leafs_right, :]),
+                        X[leafs_right, :],
                         y[leafs_right],
                     )
 
@@ -1265,13 +1245,6 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
                     if all(split_conditions):
                         did_split = True
-
-                        if N_left == 1:
-                            X_left = X_left.reshape(-1, 1).T
-
-                        if N_right == 1:
-                            X_right = X_right.reshape(-1, 1).T
-
                         data = [(X_left, y_left), (X_right, y_right)]
 
                 result = {"did_split": did_split, "data": data}
@@ -1451,10 +1424,10 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                         leafs_left = leafs == 1
                         leafs_right = np.invert(leafs_left)
                         (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X_withoutnans[leafs_left, :]),
+                            X_withoutnans[leafs_left, :],
                             y_withoutnans[leafs_left],
                         ), (
-                            np.squeeze(X_withoutnans[leafs_right, :]),
+                            X_withoutnans[leafs_right, :],
                             y_withoutnans[leafs_right],
                         )
                     else:
@@ -1462,10 +1435,10 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                         leafs_left = leafs == 1
                         leafs_right = np.invert(leafs_left)
                         (X_left, y_left), (X_right, y_right) = (
-                            np.squeeze(X[leafs_left, :]),
+                            X[leafs_left, :],
                             y[leafs_left],
                         ), (
-                            np.squeeze(X[leafs_right, :]),
+                            X[leafs_right, :],
                             y[leafs_right],
                         )
 
@@ -1480,19 +1453,17 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                         did_split = True
 
                         if N_left == 1:
-                            X_left = X_left.reshape(-1, 1).T
                             node["missing_side"] = "left"
                             if missing:
-                                X_left = np.append(X_left, X[nans], axis=0)
-                                y_left = np.append(y_left, y[nans], axis=0)
+                                X_left = np.concatenate([X_left, X[nans]], axis=0)
+                                y_left = np.concatenate([y_left, y[nans]], axis=0)
 
                         if N_right == 1:
-                            X_right = X_right.reshape(-1, 1).T
                             if N_left > 1:
                                 node["missing_side"] = "right"
                                 if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append(y_right, y[nans], axis=0)
+                                    X_right = np.concatenate([X_right, X[nans]], axis=0)
+                                    y_right = np.concatenate([y_right, y[nans]], axis=0)
 
                         score_conditions = [N_left > 1, N_right > 1]
                         if all(score_conditions):
@@ -1501,13 +1472,13 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                             ):
                                 node["missing_side"] = "left"
                                 if missing:
-                                    X_left = np.append(X_left, X[nans], axis=0)
-                                    y_left = np.append(y_left, y[nans], axis=0)
+                                    X_left = np.concatenate([X_left, X[nans]], axis=0)
+                                    y_left = np.concatenate([y_left, y[nans]], axis=0)
                             else:
                                 node["missing_side"] = "right"
                                 if missing:
-                                    X_right = np.append(X_right, X[nans], axis=0)
-                                    y_right = np.append(y_right, y[nans], axis=0)
+                                    X_right = np.concatenate([X_right, X[nans]], axis=0)
+                                    y_right = np.concatenate([y_right, y[nans]], axis=0)
 
                         data = [(X_left, y_left), (X_right, y_right)]
 
@@ -1601,10 +1572,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
             return X
 
         def _predict(node, X, y_pred_final=None):
-            if X.ndim == 1:
-                X = _base(node, X.reshape(-1, 1).T)
-            else:
-                X = _base(node, X)
+            X = _base(node, X)
 
             no_children = (
                 node["children"]["left"] is None and node["children"]["right"] is None
@@ -1621,9 +1589,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                 leafs = node["split"].apply(X[:, 1:])
                 leafs_left = leafs == 1
                 leafs_right = np.invert(leafs_left)
-                X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
-                    X[leafs_right, :]
-                )
+                X_left, X_right = X[leafs_left, :], X[leafs_right, :]
 
                 if len(X_left) > 0:
                     y_pred_final = _predict(
@@ -1636,10 +1602,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                 return y_pred_final
 
         def _predict_missing(node, X, y_pred_final=None):
-            if X.ndim == 1:
-                X = _base(node, X.reshape(-1, 1).T)
-            else:
-                X = _base(node, X)
+            X = _base(node, X)
 
             no_children = (
                 node["children"]["left"] is None and node["children"]["right"] is None
@@ -1658,9 +1621,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     leafs = node["split"].apply(X[~nans, 1:])
                     leafs_left = leafs == 1
                     leafs_right = np.invert(leafs_left)
-                    X_left, X_right = np.squeeze(X[~nans][leafs_left, :]), np.squeeze(
-                        X[~nans][leafs_right, :]
-                    )
+                    X_left, X_right = X[~nans][leafs_left, :], X[~nans][leafs_right, :]
                     if node["missing_side"] == "left":
                         X_left, X_right = (
                             np.concatenate((X_left, X[nans]), axis=0),
@@ -1674,9 +1635,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     leafs = node["split"].apply(X[:, 1:])
                     leafs_left = leafs == 1
                     leafs_right = np.invert(leafs_left)
-                    X_left, X_right = np.squeeze(X[leafs_left, :]), np.squeeze(
-                        X[leafs_right, :]
-                    )
+                    X_left, X_right = X[leafs_left, :], X[leafs_right, :]
 
                 if len(X_left) > 0:
                     y_pred_final = _predict_missing(
