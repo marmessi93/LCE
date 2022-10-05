@@ -82,30 +82,30 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
 
     xgb_n_estimators : tuple, default=(10, 50, 100)
         The number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds. The tuple is
+        XGBoost corresponds to the number of boosting rounds. The tuple provided is
         the search space used for the hyperparameter optimization (Hyperopt).
 
     xgb_max_depth : tuple, default=(3, 6, 9)
-        Maximum tree depth for XGBoost base learners. The list is the search 
+        Maximum tree depth for XGBoost base learners. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
         `learning_rate` of XGBoost. The learning rate corresponds to the
         step size shrinkage used in update to prevent overfitting. After each
         boosting step, the learning rate shrinks the feature weights to make the boosting
-        process more conservative. The tuple is the search space used for the 
+        process more conservative. The tuple provided is the search space used for the 
         hyperparameter optimization (Hyperopt).
 
     xgb_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
         The type of booster to use. "gbtree" and "dart" use tree based models
-        while "gblinear" uses linear functions. The tuple is the search space used 
+        while "gblinear" uses linear functions. The tuple provided is the search space used 
         for the hyperparameter optimization (Hyperopt).
 
     xgb_gamma : tuple, default=(0, 1, 10)
-        'gamma' of XGBoost. `gamma` corresponds to the minimum loss reduction
+        `gamma` of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
         The larger `gamma` is, the more conservative XGBoost algorithm will be.
-        The tuple is the search space used for the hyperparameter optimization 
+        The tuple provided is the search space used for the hyperparameter optimization 
         (Hyperopt).
 
     xgb_min_child_weight : tuple, default=(1, 5, 15, 100)
@@ -114,43 +114,43 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
         partitioning. The larger `min_child_weight` is, the more conservative XGBoost
-        algorithm will be. The tuple is the search space used for the hyperparameter 
+        algorithm will be. The tuple provided is the search space used for the hyperparameter 
         optimization (Hyperopt).
 
     xgb_subsample : tuple, default=(1.0,)
         XGBoost subsample ratio of the training instances. Setting it to 0.5 means
         that XGBoost would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
-        once in every boosting iteration. The tuple is the search space used for 
+        once in every boosting iteration. The tuple provided is the search space used for 
         the hyperparameter optimization (Hyperopt).
 
     xgb_colsample_bytree : tuple, default=(1.0,)
         XGBoost subsample ratio of columns when constructing each tree.
-        Subsampling occurs once for every tree constructed. The tuple is the search 
+        Subsampling occurs once for every tree constructed. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_colsample_bylevel : tuple, default=(1.0,)
         XGBoost subsample ratio of columns for each level. Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
-        from the set of columns chosen for the current tree. The tuple is the search 
+        from the set of columns chosen for the current tree. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_colsample_bynode : tuple, default=(1.0,)
         XGBoost subsample ratio of columns for each node (split). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
-        from the set of columns chosen for the current level. The tuple is the search 
+        from the set of columns chosen for the current level. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_reg_alpha : tuple, default=(0,)
         `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple is the search space used for the hyperparameter 
+        conservative. The tuple provided is the search space used for the hyperparameter 
         optimization (Hyperopt).
 
     xgb_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
         `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple is the search space used for the hyperparameter 
+        conservative. The tuple provided is the search space used for the hyperparameter 
         optimization (Hyperopt).
         
     n_jobs : int, default=None
@@ -523,30 +523,30 @@ class LCERegressor(RegressorMixin, BaseEstimator):
 
     xgb_n_estimators : tuple, default=(10, 50, 100)
         The number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds. The tuple is
+        XGBoost corresponds to the number of boosting rounds. The tuple provided is
         the search space used for the hyperparameter optimization (Hyperopt).
 
     xgb_max_depth : tuple, default=(3, 6, 9)
-        Maximum tree depth for XGBoost base learners. The list is the search 
+        Maximum tree depth for XGBoost base learners. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
         `learning_rate` of XGBoost. The learning rate corresponds to the
         step size shrinkage used in update to prevent overfitting. After each
         boosting step, the learning rate shrinks the feature weights to make the boosting
-        process more conservative. The tuple is the search space used for the 
+        process more conservative. The tuple provided is the search space used for the 
         hyperparameter optimization (Hyperopt).
 
     xgb_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
         The type of booster to use. "gbtree" and "dart" use tree based models
-        while "gblinear" uses linear functions. The tuple is the search space used 
+        while "gblinear" uses linear functions. The tuple provided is the search space used 
         for the hyperparameter optimization (Hyperopt).
 
     xgb_gamma : tuple, default=(0, 1, 10)
-        'gamma' of XGBoost. `gamma` corresponds to the minimum loss reduction
+        `gamma` of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
         The larger `gamma` is, the more conservative XGBoost algorithm will be.
-        The tuple is the search space used for the hyperparameter optimization 
+        The tuple provided is the search space used for the hyperparameter optimization 
         (Hyperopt).
 
     xgb_min_child_weight : tuple, default=(1, 5, 15, 100)
@@ -555,43 +555,43 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
         partitioning. The larger `min_child_weight` is, the more conservative XGBoost
-        algorithm will be. The tuple is the search space used for the hyperparameter 
+        algorithm will be. The tuple provided is the search space used for the hyperparameter 
         optimization (Hyperopt).
 
     xgb_subsample : tuple, default=(1.0,)
         XGBoost subsample ratio of the training instances. Setting it to 0.5 means
         that XGBoost would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
-        once in every boosting iteration. The tuple is the search space used for 
+        once in every boosting iteration. The tuple provided is the search space used for 
         the hyperparameter optimization (Hyperopt).
 
     xgb_colsample_bytree : tuple, default=(1.0,)
         XGBoost subsample ratio of columns when constructing each tree.
-        Subsampling occurs once for every tree constructed. The tuple is the search 
+        Subsampling occurs once for every tree constructed. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_colsample_bylevel : tuple, default=(1.0,)
         XGBoost subsample ratio of columns for each level. Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
-        from the set of columns chosen for the current tree. The tuple is the search 
+        from the set of columns chosen for the current tree. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_colsample_bynode : tuple, default=(1.0,)
         XGBoost subsample ratio of columns for each node (split). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
-        from the set of columns chosen for the current level. The tuple is the search 
+        from the set of columns chosen for the current level. The tuple provided is the search 
         space used for the hyperparameter optimization (Hyperopt).
 
     xgb_reg_alpha : tuple, default=(0,)
         `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple is the search space used for the hyperparameter 
+        conservative. The tuple provided is the search space used for the hyperparameter 
         optimization (Hyperopt).
 
     xgb_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
         `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
         term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple is the search space used for the hyperparameter 
+        conservative. The tuple provided is the search space used for the hyperparameter 
         optimization (Hyperopt).
         
     n_jobs : int, default=None
