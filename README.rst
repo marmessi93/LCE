@@ -39,7 +39,6 @@
 - Adheres to scikit-learn conventions to allow interaction with scikit-learn pipelines and model selection tools
 - Is released in open source and commercially usable - Apache 2.0 license
 
-An article introducing LCE and illustrative code examples has been published in `Towards Data Science <https://towardsdatascience.com/random-forest-or-xgboost-it-is-time-to-explore-lce-2fed913eafb8?source=friends_link&sk=8cba14ad36f7662d07e842d03944a316>`_.
 
 Getting Started
 ===============
@@ -95,12 +94,19 @@ Documentation
 LCE documentation, including API documentation and general examples, can be found `here <https://lce.readthedocs.io/en/latest/>`_.
 
 
-Reference
-=========
+Reference Papers
+================
 
-The full information about LCE design and evaluation can be found in the associated `journal paper <https://hal.inria.fr/hal-03599214/document>`_:
+LCE originated from a research at `Inria, France <https://www.inria.fr/en>`_. 
+It has been initially designed for a specific application in:
 
-.. [1] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
+.. [1] Fauvel, K., V. Masson, E. Fromont, P. Faverdin and A. Termier. Towards Sustainable Dairy Management - A Machine Learning Enhanced Method for Estrus Detection. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, 2019
+
+And then evaluated on the public UCI datasets in:
+
+.. [2] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
+
+If you use LCE, we would appreciate citations.
 
 
 Contact
