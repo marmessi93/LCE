@@ -111,4 +111,4 @@ If you use LCE, we would appreciate citations.
 
 Contact
 =======
-If you have any questions, you can contact me here: `Kevin Fauvel <https://www.linkedin.com/in/kevin-fauvel-phd-cfa-caia-51b7777a/>`_.
+If you have any question, you can contact me here: `Kevin Fauvel <https://www.linkedin.com/in/kevin-fauvel-phd-cfa-caia-51b7777a/>`_.
