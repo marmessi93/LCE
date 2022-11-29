@@ -5,7 +5,7 @@
 
 |
  
-Welcome to LCE documentation!
+Welcome to the documentation of LCE!
 ====================================
 
 | **Local Cascade Ensemble (LCE)** is a *high-performing*, *scalable* and *user-friendly* machine learning method for the general tasks of **Classification** and **Regression**.
