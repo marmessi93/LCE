@@ -1,7 +1,7 @@
 ﻿LCE Presentation
 ================
 As shown in “Why Do Tree-Based Models still Outperform Deep Learning on Tabular Data?” [8]_, **the widely used tree-based models remain the state-of-the-art machine learning methods in many cases**. 
-Recently, **Local Cascade Ensemble (LCE)** [7]_ proposes to combine the strengths of the top performing tree-based ensemble methods - Random Forest [3]_ and eXtreme Gradient Boosting (XGBoost) [4]_, 
+**Local Cascade Ensemble (LCE)** [7]_ proposes to combine the strengths of the top performing tree-based ensemble methods - Random Forest [3]_ and eXtreme Gradient Boosting (XGBoost) [4]_, 
 and integrates a supplementary diversification approach which enables it to be **a better generalizing predictor**.
 
 Overview
@@ -75,7 +75,7 @@ Published Results
 -----------------
 LCE has been initially designed for a specific application in [6]_, and then evaluated on the public UCI datasets [5]_ in [7]_. 
 Results show that LCE obtains on average a better prediction performance than the state-of-the-art classifiers, including Random Forest and XGBoost.
-For a comparison between LCE, Random Forest and XGBoost on different public datasets, using the public implementations of the aforementioned algorithms, please refer to my article published in Towards Data Science `"LCE: The Most Powerful Machine Learning Method?" <https://towardsdatascience.com/lce-the-most-powerful-machine-learning-method-e8ea77f317d6?source=friends_link&sk=c8911ad03dd1e0e3fd02a17835609737>`_.
+For a comparison between LCE, Random Forest and XGBoost on different public datasets, using the public implementations of the aforementioned algorithms, please refer to the article published in Towards Data Science `"LCE: The Most Powerful Machine Learning Method?" <https://towardsdatascience.com/lce-the-most-powerful-machine-learning-method-e8ea77f317d6?source=friends_link&sk=c8911ad03dd1e0e3fd02a17835609737>`_.
 
 
 References
