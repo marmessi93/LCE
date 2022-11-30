@@ -94,6 +94,13 @@ Documentation
 LCE documentation, including API documentation and general examples, can be found `here <https://lce.readthedocs.io/en/latest/>`_.
 
 
+Contribute to LCE
+=================
+
+Your valuable contribution will help make this package more powerful, and better for the community.
+There are multiple ways to participate, check out this `page <https://lce.readthedocs.io/en/latest/contribute.html>`_!
+
+
 Reference Papers
 ================
 
@@ -111,4 +118,5 @@ If you use LCE, we would appreciate citations.
 
 Contact
 =======
+
 If you have any question, you can contact me here: `Kevin Fauvel <https://www.linkedin.com/in/kevin-fauvel-phd-cfa-caia-51b7777a/>`_.

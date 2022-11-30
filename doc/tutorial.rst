@@ -1,9 +1,8 @@
 ﻿LCE Presentation
 ================
-**Local Cascade Ensemble (LCE)** proposes to answer the recurrent question faced by data science practitioners: **Random Forest or XGBoost**?
-
-LCE combines their strengths and adopts a complementary diversification approach to obtain a better generalizing predictor. 
-Thus, LCE further enhances the prediction performance of both Random Forest and XGBoost.
+As shown in “Why Do Tree-Based Models still Outperform Deep Learning on Tabular Data?” [8]_, **the widely used tree-based models remain the state-of-the-art machine learning methods in many cases**. 
+Recently, **Local Cascade Ensemble (LCE)** [7]_ proposes to combine the strengths of the top performing tree-based ensemble methods - Random Forest [3]_ and eXtreme Gradient Boosting (XGBoost) [4]_, 
+and integrates a supplementary diversification approach which enables it to be **a better generalizing predictor**.
 
 Overview
 --------
@@ -11,7 +10,7 @@ The construction of an ensemble method involves combining accurate and diverse i
 There are **two complementary ways** to generate diverse predictors: *(i)* by **changing the training data distribution** and *(ii)* by **learning different parts of the training data**.
 
 **LCE adopts these two diversification approaches.** 
-First, *(i)* LCE combines the two well-known methods that modify the distribution of the original training data with complementary effects on the bias-variance trade-off: bagging [2]_ (variance reduction) and boosting [8]_ (bias reduction). 
+First, *(i)* LCE combines the two well-known methods that modify the distribution of the original training data with complementary effects on the bias-variance trade-off: bagging [2]_ (variance reduction) and boosting [9]_ (bias reduction). 
 Then, *(ii)* LCE learns different parts of the training data to capture new relationships that cannot be discovered globally based on a divide-and-conquer strategy (a decision tree). 
 Before detailing how LCE combines these methods, we introduce the key concepts behind them that will be used in the explanation of LCE.
 
@@ -76,6 +75,8 @@ Published Results
 -----------------
 LCE has been initially designed for a specific application in [6]_, and then evaluated on the public UCI datasets [5]_ in [7]_. 
 Results show that LCE obtains on average a better prediction performance than the state-of-the-art classifiers, including Random Forest and XGBoost.
+For a comparison between LCE, Random Forest and XGBoost on different public datasets, using the public implementations of the aforementioned algorithms, please refer to my article published in Towards Data Science `"LCE: The Most Powerful Machine Learning Method?" <https://towardsdatascience.com/lce-the-most-powerful-machine-learning-method-e8ea77f317d6?source=friends_link&sk=c8911ad03dd1e0e3fd02a17835609737>`_.
+
 
 References
 ----------
@@ -86,7 +87,10 @@ References
 .. [5] Dua, D. and C. Graff. UCI Machine Learning Repository, 2017
 .. [6] Fauvel, K., V. Masson, E. Fromont, P. Faverdin and A. Termier. Towards Sustainable Dairy Management - A Machine Learning Enhanced Method for Estrus Detection. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 2019
 .. [7] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
-.. [8] Schapire, R. The Strength of Weak Learnability. Machine Learning, 5(2):197–227, 1990
+.. [8] Grinsztajn, L., E. Oyallon and G. Varoquaux. Why Do Tree-Based Models still Outperform Deep Learning on Typical Tabular Data? In Proceedings of the 36th Conference on Neural Information Processing Systems Datasets and Benchmarks Track, 2022
+.. [9] Schapire, R. The Strength of Weak Learnability. Machine Learning, 5(2):197–227, 1990
+
+
 
 Installation
 ============

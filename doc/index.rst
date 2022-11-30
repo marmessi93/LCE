@@ -34,6 +34,13 @@ Welcome to the documentation of LCE!
    
 .. toctree::
    :maxdepth: 2
+   :hidden:	
+   :caption: Contribute
+
+   contribute
+   
+.. toctree::
+   :maxdepth: 2
    :hidden:
    :caption: Reference
 
