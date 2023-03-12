@@ -4,6 +4,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from ._xgboost import xgb_opt_classifier, xgb_opt_regressor
+from ._lightgbm import lgbm_opt_classifier, lgbm_opt_regressor
 
 
 class LCETreeClassifier(ClassifierMixin, BaseEstimator):
@@ -63,76 +64,88 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         The score of the base classifier (XGBoost) optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    xgb_n_estimators : tuple, default=(10, 50, 100)
-        The number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds. The tuple provided is
+    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+        The base classifier trained in each node of a tree.
+
+    base_n_estimators : tuple, default=(10, 50, 100)
+        The number of estimators of the base learner. The tuple provided is
         the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_max_depth : tuple, default=(3, 6, 9)
-        Maximum tree depth for XGBoost base learners. The tuple provided is the search
+    base_max_depth : tuple, default=(3, 6, 9)
+        Maximum tree depth for base learners. The tuple provided is the search
+        space used for the hyperparameter optimization (Hyperopt).
+        
+    base_num_leaves : tuple, default=(20, 50, 100, 500)
+        Maximum tree leaves (applicable to LightGBM only). The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
-        `learning_rate` of XGBoost. The learning rate corresponds to the
-        step size shrinkage used in update to prevent overfitting. After each
-        boosting step, the learning rate shrinks the feature weights to make the boosting
-        process more conservative. The tuple provided is the search space used for the
+    base_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
+        `learning_rate` of the base learner. The tuple provided is the search space used for the
         hyperparameter optimization (Hyperopt).
 
-    xgb_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
-        The type of booster to use. "gbtree" and "dart" use tree based models
+    base_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
+        The type of booster to use (applicable to XGBoost only). "gbtree" and "dart" use tree based models
         while "gblinear" uses linear functions. The tuple provided is the search space used
         for the hyperparameter optimization (Hyperopt).
+        
+    base_boosting_type : ("dart", "gbdt", "rf"), default=("gbdt",)
+        The type of boosting type to use (applicable to LightGBM only): "dart" dropouts meet Multiple Additive 
+        Regression Trees; "gbdt" traditional Gradient Boosting Decision Tree; "rf" Random Forest. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_gamma : tuple, default=(0, 1, 10)
+    base_gamma : tuple, default=(0, 1, 10)
         `gamma` of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
         The larger `gamma` is, the more conservative XGBoost algorithm will be.
         The tuple provided is the search space used for the hyperparameter optimization
         (Hyperopt).
 
-    xgb_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of XGBoost. `min_child_weight` defines the
+    base_min_child_weight : tuple, default=(1, 5, 15, 100)
+        `min_child_weight` of base learner. `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
-        partitioning. The larger `min_child_weight` is, the more conservative XGBoost
+        partitioning. The larger `min_child_weight` is, the more conservative the base learner
         algorithm will be. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
-    xgb_subsample : tuple, default=(1.0,)
-        XGBoost subsample ratio of the training instances. Setting it to 0.5 means
-        that XGBoost would randomly sample half of the training data prior to
+    base_subsample : tuple, default=(1.0,)
+        Base learner subsample ratio of the training instances. Setting it to 0.5 means
+        that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
+        
+    base_subsample_for_bin : tuple, default=(200000,)
+        Number of samples for constructing bins (applicable to LightGBM only). The tuple provided is the
+        search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bytree : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns when constructing each tree.
+    base_colsample_bytree : tuple, default=(1.0,)
+        Base learner subsample ratio of columns when constructing each tree.
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bylevel : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each level. Subsampling occurs
+    base_colsample_bylevel : tuple, default=(1.0,)
+        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bynode : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each node (split). Subsampling
+    base_colsample_bynode : tuple, default=(1.0,)
+        Subsample ratio of columns for each node split (applicable to XGBoost only). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
         from the set of columns chosen for the current level. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
-        term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple provided is the search space used for the hyperparameter
-        optimization (Hyperopt).
+    base_reg_alpha : tuple, default=(0,)
+        `reg_alpha` of the base learner. 
+        `reg_alpha` corresponds to the L1 regularization term on the weights. 
+        Increasing this value will make the base learner more conservative. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
-        `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
-        term on the weights. Increasing this value will make XGBoost model more
+    base_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
+        `reg_lambda` of the base learner. `reg_lambda` corresponds to the L2 regularization term 
+        on the weights. Increasing this value will make the base learner more
         conservative. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
@@ -143,7 +156,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
     random_state : int, RandomState instance or None, default=None
         Controls the randomness of the sampling of the features to consider when
         looking for the best split at each node (if ``max_features < n_features``),
-        the base classifier (XGBoost) and the Hyperopt algorithm.
+        the base learner and the Hyperopt algorithm.
 
     verbose : int, default=0
         Controls the verbosity when fitting.
@@ -167,18 +180,22 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         min_samples_leaf=1,
         n_iter=10,
         metric="accuracy",
-        xgb_n_estimators=(10, 50, 100),
-        xgb_max_depth=(3, 6, 9),
-        xgb_learning_rate=(0.01, 0.1, 0.3, 0.5),
-        xgb_booster=("gbtree",),
-        xgb_gamma=(0, 1, 10),
-        xgb_min_child_weight=(1, 5, 15, 100),
-        xgb_subsample=(1.0,),
-        xgb_colsample_bytree=(1.0,),
-        xgb_colsample_bylevel=(1.0,),
-        xgb_colsample_bynode=(1.0,),
-        xgb_reg_alpha=(0,),
-        xgb_reg_lambda=(0.1, 1.0, 5.0),
+        base_learner="xgboost",
+        base_n_estimators=(10, 50, 100),
+        base_max_depth=(3, 6, 9),
+        base_num_leaves=(20, 50, 100, 500),
+        base_learning_rate=(0.01, 0.1, 0.3, 0.5),
+        base_booster=("gbtree",),
+        base_boosting_type=("gbdt",),
+        base_gamma=(0, 1, 10),
+        base_min_child_weight=(1, 5, 15, 100),
+        base_subsample=(1.0,),
+        base_subsample_for_bin=(200000,),
+        base_colsample_bytree=(1.0,),
+        base_colsample_bylevel=(1.0,),
+        base_colsample_bynode=(1.0,),
+        base_reg_alpha=(0,),
+        base_reg_lambda=(0.1, 1.0, 5.0),
         n_jobs=None,
         random_state=None,
         verbose=0,
@@ -191,18 +208,22 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         self.min_samples_leaf = min_samples_leaf
         self.n_iter = n_iter
         self.metric = metric
-        self.xgb_n_estimators = xgb_n_estimators
-        self.xgb_max_depth = xgb_max_depth
-        self.xgb_learning_rate = xgb_learning_rate
-        self.xgb_booster = xgb_booster
-        self.xgb_gamma = xgb_gamma
-        self.xgb_min_child_weight = xgb_min_child_weight
-        self.xgb_subsample = xgb_subsample
-        self.xgb_colsample_bytree = xgb_colsample_bytree
-        self.xgb_colsample_bylevel = xgb_colsample_bylevel
-        self.xgb_colsample_bynode = xgb_colsample_bynode
-        self.xgb_reg_alpha = xgb_reg_alpha
-        self.xgb_reg_lambda = xgb_reg_lambda
+        self.base_learner = base_learner
+        self.base_n_estimators = base_n_estimators
+        self.base_max_depth = base_max_depth
+        self.base_num_leaves=base_num_leaves
+        self.base_learning_rate = base_learning_rate
+        self.base_booster = base_booster
+        self.base_boosting_type = base_boosting_type
+        self.base_gamma = base_gamma
+        self.base_min_child_weight = base_min_child_weight
+        self.base_subsample = base_subsample
+        self.base_subsample_for_bin = base_subsample_for_bin
+        self.base_colsample_bytree = base_colsample_bytree
+        self.base_colsample_bylevel = base_colsample_bylevel
+        self.base_colsample_bynode = base_colsample_bynode
+        self.base_reg_alpha = base_reg_alpha
+        self.base_reg_lambda = base_reg_lambda
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
@@ -225,46 +246,72 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         """
         self.classes_ = np.unique(y)
         self.n_features_in_ = X.shape[1]
-
+        base_dict = {"lightgbm": lgbm_opt_classifier, 
+                     "xgboost": xgb_opt_classifier}
+        
         def _build_tree(X, y):
             """Build a LCE tree."""
             global index_node_global
 
             def _create_node(X, y, depth, container):
                 """Create a node in the tree."""
-                # Add XGBoost predictions as features to the dataset
-                model_node = xgb_opt_classifier(
-                    X,
-                    y,
-                    n_iter=self.n_iter,
-                    metric=self.metric,
-                    n_estimators=self.xgb_n_estimators,
-                    max_depth=self.xgb_max_depth,
-                    learning_rate=self.xgb_learning_rate,
-                    booster=self.xgb_booster,
-                    gamma=self.xgb_gamma,
-                    min_child_weight=self.xgb_min_child_weight,
-                    subsample=self.xgb_subsample,
-                    colsample_bytree=self.xgb_colsample_bytree,
-                    colsample_bylevel=self.xgb_colsample_bylevel,
-                    colsample_bynode=self.xgb_colsample_bynode,
-                    reg_alpha=self.xgb_reg_alpha,
-                    reg_lambda=self.xgb_reg_lambda,
-                    n_jobs=self.n_jobs,
-                    random_state=self.random_state,
-                )
-                pred_proba = np.around(model_node.predict_proba(X), 6)
+                y_unique = np.unique(y)
+                y_unique_size = y_unique.size
+                
+                if y_unique_size > 1:                
+                    # Add base learner predictions as features to the dataset
+                    if self.base_learner=="lightgbm":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            num_leaves=self.base_num_leaves,
+                            learning_rate=self.base_learning_rate,
+                            boosting_type=self.base_boosting_type,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            subsample_for_bin=self.base_subsample_for_bin,
+                            colsample_bytree=self.base_colsample_bytree,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    else:
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            booster=self.base_booster,
+                            gamma=self.base_gamma,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            colsample_bytree=self.base_colsample_bytree,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            colsample_bynode=self.base_colsample_bynode,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    pred_proba = np.around(model_node.predict_proba(X), 6)
 
                 c = 0
                 X = np.concatenate(
                     [X, np.zeros((X.shape[0], self.n_classes_in))], axis=1
                 )
-                y_unique = np.unique(y)
-                y_unique_size = y_unique.size
                 for i in range(0, self.n_classes_in):
                     if i in y:
                         if y_unique_size == 1:
-                            X[:, -self.n_classes_in + i] = pred_proba[:, 1]
+                            model_node = None
+                            X[:, -self.n_classes_in + i] = 1
                         else:
                             X[:, -self.n_classes_in + i] = pred_proba[:, c]
                             c += 1
@@ -407,28 +454,53 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
 
             def _create_node_missing(X, y, depth, container):
                 """Create a node in the tree."""
-                # Add XGBoost predictions as features to the dataset
-                model_node = xgb_opt_classifier(
-                    X,
-                    y,
-                    n_iter=self.n_iter,
-                    metric=self.metric,
-                    n_estimators=self.xgb_n_estimators,
-                    max_depth=self.xgb_max_depth,
-                    learning_rate=self.xgb_learning_rate,
-                    booster=self.xgb_booster,
-                    gamma=self.xgb_gamma,
-                    min_child_weight=self.xgb_min_child_weight,
-                    subsample=self.xgb_subsample,
-                    colsample_bytree=self.xgb_colsample_bytree,
-                    colsample_bylevel=self.xgb_colsample_bylevel,
-                    colsample_bynode=self.xgb_colsample_bynode,
-                    reg_alpha=self.xgb_reg_alpha,
-                    reg_lambda=self.xgb_reg_lambda,
-                    n_jobs=self.n_jobs,
-                    random_state=self.random_state,
-                )
-                pred_proba = np.around(model_node.predict_proba(X), 6)
+                y_unique = np.unique(y)
+                y_unique_size = y_unique.size
+                
+                if y_unique_size > 1:                
+                    # Add base learner predictions as features to the dataset
+                    if self.base_learner=="lightgbm":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            num_leaves=self.base_num_leaves,
+                            learning_rate=self.base_learning_rate,
+                            boosting_type=self.base_boosting_type,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            subsample_for_bin=self.base_subsample_for_bin,
+                            colsample_bytree=self.base_colsample_bytree,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    else:
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            booster=self.base_booster,
+                            gamma=self.base_gamma,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            colsample_bytree=self.base_colsample_bytree,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            colsample_bynode=self.base_colsample_bynode,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    pred_proba = np.around(model_node.predict_proba(X), 6)
 
                 c = 0
                 X = np.concatenate(
@@ -439,7 +511,8 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 for i in range(0, self.n_classes_in):
                     if i in y:
                         if y_unique_size == 1:
-                            X[:, -self.n_classes_in + i] = pred_proba[:, 1]
+                            model_node = None
+                            X[:, -self.n_classes_in + i] = 1
                         else:
                             X[:, -self.n_classes_in + i] = pred_proba[:, c]
                             c += 1
@@ -662,14 +735,17 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         """
 
         def _base_proba(node, X):
-            y_pred = np.around(node["model"].predict_proba(X[:, 1:]), 6)
             y_unique_size = node["classes_in"].size
+            
+            if y_unique_size > 1:
+                y_pred = np.around(node["model"].predict_proba(X[:, 1:]), 6)
+            
             c = 0
             X = np.concatenate([X, np.zeros((X.shape[0], node["num_classes"]))], axis=1)
             for i in range(0, node["num_classes"]):
                 if i in node["classes_in"]:
                     if y_unique_size == 1:
-                        X[:, -node["num_classes"] + i] = y_pred[:, 1]
+                        X[:, -node["num_classes"] + i] = 1
                     else:
                         X[:, -node["num_classes"] + i] = y_pred[:, c]
                         c += 1
@@ -841,82 +917,94 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
     n_iter: int, default=10
         Number of iterations to set the hyperparameters of each node base
-        regressor (XGBoost) in Hyperopt.
+        regressor in Hyperopt.
 
     metric: string, default="neg_mean_squared_error"
-        The score of the base regressor (XGBoost) optimized by Hyperopt. Supported metrics
+        The score of the base regressor optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    xgb_n_estimators : tuple, default=(10, 50, 100)
-        The number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds. The tuple provided is
+    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+        The base classifier trained in each node of a tree.
+
+    base_n_estimators : tuple, default=(10, 50, 100)
+        The number of estimators of the base learner. The tuple provided is
         the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_max_depth : tuple, default=(3, 6, 9)
-        Maximum tree depth for XGBoost base learners. The tuple provided is the search
+    base_max_depth : tuple, default=(3, 6, 9)
+        Maximum tree depth for base learners. The tuple provided is the search
+        space used for the hyperparameter optimization (Hyperopt).
+        
+    base_num_leaves : tuple, default=(20, 50, 100, 500)
+        Maximum tree leaves (applicable to LightGBM only). The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
-        `learning_rate` of XGBoost. The learning rate corresponds to the
-        step size shrinkage used in update to prevent overfitting. After each
-        boosting step, the learning rate shrinks the feature weights to make the boosting
-        process more conservative. The tuple provided is the search space used for the
+    base_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
+        `learning_rate` of the base learner. The tuple provided is the search space used for the
         hyperparameter optimization (Hyperopt).
 
-    xgb_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
-        The type of booster to use. "gbtree" and "dart" use tree based models
+    base_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
+        The type of booster to use (applicable to XGBoost only). "gbtree" and "dart" use tree based models
         while "gblinear" uses linear functions. The tuple provided is the search space used
         for the hyperparameter optimization (Hyperopt).
+        
+    base_boosting_type : ("dart", "gbdt", "rf"), default=("gbdt",)
+        The type of boosting type to use (applicable to LightGBM only): "dart" dropouts meet Multiple Additive 
+        Regression Trees; "gbdt" traditional Gradient Boosting Decision Tree; "rf" Random Forest. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_gamma : tuple, default=(0, 1, 10)
+    base_gamma : tuple, default=(0, 1, 10)
         `gamma` of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
         The larger `gamma` is, the more conservative XGBoost algorithm will be.
         The tuple provided is the search space used for the hyperparameter optimization
         (Hyperopt).
 
-    xgb_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of XGBoost. `min_child_weight` defines the
+    base_min_child_weight : tuple, default=(1, 5, 15, 100)
+        `min_child_weight` of base learner. `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
-        partitioning. The larger `min_child_weight` is, the more conservative XGBoost
+        partitioning. The larger `min_child_weight` is, the more conservative the base learner
         algorithm will be. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
-    xgb_subsample : tuple, default=(1.0,)
-        XGBoost subsample ratio of the training instances. Setting it to 0.5 means
-        that XGBoost would randomly sample half of the training data prior to
+    base_subsample : tuple, default=(1.0,)
+        Base learner subsample ratio of the training instances. Setting it to 0.5 means
+        that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
+        
+    base_subsample_for_bin : tuple, default=(200000,)
+        Number of samples for constructing bins (applicable to LightGBM only). The tuple provided is the
+        search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bytree : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns when constructing each tree.
+    base_colsample_bytree : tuple, default=(1.0,)
+        Base learner subsample ratio of columns when constructing each tree.
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bylevel : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each level. Subsampling occurs
+    base_colsample_bylevel : tuple, default=(1.0,)
+        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bynode : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each node (split). Subsampling
+    base_colsample_bynode : tuple, default=(1.0,)
+        Subsample ratio of columns for each node split (applicable to XGBoost only). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
         from the set of columns chosen for the current level. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
-        term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple provided is the search space used for the hyperparameter
-        optimization (Hyperopt).
+    base_reg_alpha : tuple, default=(0,)
+        `reg_alpha` of the base learner. 
+        `reg_alpha` corresponds to the L1 regularization term on the weights. 
+        Increasing this value will make the base learner more conservative. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
-        `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
-        term on the weights. Increasing this value will make XGBoost model more
+    base_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
+        `reg_lambda` of the base learner. `reg_lambda` corresponds to the L2 regularization term 
+        on the weights. Increasing this value will make the base learner more
         conservative. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
@@ -947,18 +1035,22 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         min_samples_leaf=1,
         n_iter=10,
         metric="neg_mean_squared_error",
-        xgb_n_estimators=(10, 50, 100),
-        xgb_max_depth=(3, 6, 9),
-        xgb_learning_rate=(0.01, 0.1, 0.3, 0.5),
-        xgb_booster=("gbtree",),
-        xgb_gamma=(0, 1, 10),
-        xgb_min_child_weight=(1, 5, 15, 100),
-        xgb_subsample=(1.0,),
-        xgb_colsample_bytree=(1.0,),
-        xgb_colsample_bylevel=(1.0,),
-        xgb_colsample_bynode=(1.0,),
-        xgb_reg_alpha=(0,),
-        xgb_reg_lambda=(0.1, 1.0, 5.0),
+        base_learner="xgboost",
+        base_n_estimators=(10, 50, 100),
+        base_max_depth=(3, 6, 9),
+        base_num_leaves=(20, 50, 100, 500),
+        base_learning_rate=(0.01, 0.1, 0.3, 0.5),
+        base_booster=("gbtree",),
+        base_boosting_type=("gbdt",),
+        base_gamma=(0, 1, 10),
+        base_min_child_weight=(1, 5, 15, 100),
+        base_subsample=(1.0,),
+        base_subsample_for_bin=(200000,),
+        base_colsample_bytree=(1.0,),
+        base_colsample_bylevel=(1.0,),
+        base_colsample_bynode=(1.0,),
+        base_reg_alpha=(0,),
+        base_reg_lambda=(0.1, 1.0, 5.0),
         n_jobs=None,
         random_state=None,
         verbose=0,
@@ -970,18 +1062,22 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         self.min_samples_leaf = min_samples_leaf
         self.n_iter = n_iter
         self.metric = metric
-        self.xgb_n_estimators = xgb_n_estimators
-        self.xgb_max_depth = xgb_max_depth
-        self.xgb_learning_rate = xgb_learning_rate
-        self.xgb_booster = xgb_booster
-        self.xgb_gamma = xgb_gamma
-        self.xgb_min_child_weight = xgb_min_child_weight
-        self.xgb_subsample = xgb_subsample
-        self.xgb_colsample_bytree = xgb_colsample_bytree
-        self.xgb_colsample_bylevel = xgb_colsample_bylevel
-        self.xgb_colsample_bynode = xgb_colsample_bynode
-        self.xgb_reg_alpha = xgb_reg_alpha
-        self.xgb_reg_lambda = xgb_reg_lambda
+        self.base_learner = base_learner
+        self.base_n_estimators = base_n_estimators
+        self.base_max_depth = base_max_depth
+        self.base_num_leaves = base_num_leaves
+        self.base_learning_rate = base_learning_rate
+        self.base_booster = base_booster
+        self.base_boosting_type = base_boosting_type
+        self.base_gamma = base_gamma
+        self.base_min_child_weight = base_min_child_weight
+        self.base_subsample = base_subsample
+        self.base_subsample_for_bin = base_subsample_for_bin
+        self.base_colsample_bytree = base_colsample_bytree
+        self.base_colsample_bylevel = base_colsample_bylevel
+        self.base_colsample_bynode = base_colsample_bynode
+        self.base_reg_alpha = base_reg_alpha
+        self.base_reg_lambda = base_reg_lambda
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
@@ -1003,6 +1099,8 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         self : object
         """
         self.n_features_in_ = X.shape[1]
+        base_dict = {"lightgbm": lgbm_opt_regressor, 
+                     "xgboost": xgb_opt_regressor}
 
         def _build_tree(X, y):
             """Build a LCE tree."""
@@ -1010,27 +1108,48 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             def _create_node(X, y, depth, container):
                 """Create a node in the tree."""
-                # Add XGBoost predictions as features to the dataset
-                model_node = xgb_opt_regressor(
-                    X,
-                    y,
-                    n_iter=self.n_iter,
-                    metric=self.metric,
-                    n_estimators=self.xgb_n_estimators,
-                    max_depth=self.xgb_max_depth,
-                    learning_rate=self.xgb_learning_rate,
-                    booster=self.xgb_booster,
-                    gamma=self.xgb_gamma,
-                    min_child_weight=self.xgb_min_child_weight,
-                    subsample=self.xgb_subsample,
-                    colsample_bytree=self.xgb_colsample_bytree,
-                    colsample_bylevel=self.xgb_colsample_bylevel,
-                    colsample_bynode=self.xgb_colsample_bynode,
-                    reg_alpha=self.xgb_reg_alpha,
-                    reg_lambda=self.xgb_reg_lambda,
-                    n_jobs=self.n_jobs,
-                    random_state=self.random_state,
-                )
+                # Add base learner predictions as features to the dataset
+                if self.base_learner=="lightgbm":
+                    model_node = base_dict[self.base_learner](
+                        X,
+                        y,
+                        n_iter=self.n_iter,
+                        metric=self.metric,
+                        n_estimators=self.base_n_estimators,
+                        max_depth=self.base_max_depth,
+                        num_leaves=self.base_num_leaves,
+                        learning_rate=self.base_learning_rate,
+                        boosting_type=self.base_boosting_type,
+                        min_child_weight=self.base_min_child_weight,
+                        subsample=self.base_subsample,
+                        subsample_for_bin=self.base_subsample_for_bin,
+                        colsample_bytree=self.base_colsample_bytree,
+                        reg_alpha=self.base_reg_alpha,
+                        reg_lambda=self.base_reg_lambda,
+                        n_jobs=self.n_jobs,
+                        random_state=self.random_state,
+                    )
+                else:
+                    model_node = base_dict[self.base_learner](
+                        X,
+                        y,
+                        n_iter=self.n_iter,
+                        metric=self.metric,
+                        n_estimators=self.base_n_estimators,
+                        max_depth=self.base_max_depth,
+                        learning_rate=self.base_learning_rate,
+                        booster=self.base_booster,
+                        gamma=self.base_gamma,
+                        min_child_weight=self.base_min_child_weight,
+                        subsample=self.base_subsample,
+                        colsample_bytree=self.base_colsample_bytree,
+                        colsample_bylevel=self.base_colsample_bylevel,
+                        colsample_bynode=self.base_colsample_bynode,
+                        reg_alpha=self.base_reg_alpha,
+                        reg_lambda=self.base_reg_lambda,
+                        n_jobs=self.n_jobs,
+                        random_state=self.random_state,
+                    )
                 preds = np.around(model_node.predict(X), 6)
                 X = np.insert(X, X.shape[1], 0, axis=1)
                 X[:, -1] = preds
@@ -1170,27 +1289,48 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             def _create_node_missing(X, y, depth, container):
                 """Create a node in the tree."""
-                # Add XGBoost predictions as features to the dataset
-                model_node = xgb_opt_regressor(
-                    X,
-                    y,
-                    n_iter=self.n_iter,
-                    metric=self.metric,
-                    n_estimators=self.xgb_n_estimators,
-                    max_depth=self.xgb_max_depth,
-                    learning_rate=self.xgb_learning_rate,
-                    booster=self.xgb_booster,
-                    gamma=self.xgb_gamma,
-                    min_child_weight=self.xgb_min_child_weight,
-                    subsample=self.xgb_subsample,
-                    colsample_bytree=self.xgb_colsample_bytree,
-                    colsample_bylevel=self.xgb_colsample_bylevel,
-                    colsample_bynode=self.xgb_colsample_bynode,
-                    reg_alpha=self.xgb_reg_alpha,
-                    reg_lambda=self.xgb_reg_lambda,
-                    n_jobs=self.n_jobs,
-                    random_state=self.random_state,
-                )
+                # Add base learner predictions as features to the dataset
+                if self.base_learner=="lightgbm":
+                    model_node = base_dict[self.base_learner](
+                        X,
+                        y,
+                        n_iter=self.n_iter,
+                        metric=self.metric,
+                        n_estimators=self.base_n_estimators,
+                        max_depth=self.base_max_depth,
+                        num_leaves=self.base_num_leaves,
+                        learning_rate=self.base_learning_rate,
+                        boosting_type=self.base_boosting_type,
+                        min_child_weight=self.base_min_child_weight,
+                        subsample=self.base_subsample,
+                        subsample_for_bin=self.base_subsample_for_bin,
+                        colsample_bytree=self.base_colsample_bytree,
+                        reg_alpha=self.base_reg_alpha,
+                        reg_lambda=self.base_reg_lambda,
+                        n_jobs=self.n_jobs,
+                        random_state=self.random_state,
+                    )
+                else:
+                    model_node = base_dict[self.base_learner](
+                        X,
+                        y,
+                        n_iter=self.n_iter,
+                        metric=self.metric,
+                        n_estimators=self.base_n_estimators,
+                        max_depth=self.base_max_depth,
+                        learning_rate=self.base_learning_rate,
+                        booster=self.base_booster,
+                        gamma=self.base_gamma,
+                        min_child_weight=self.base_min_child_weight,
+                        subsample=self.base_subsample,
+                        colsample_bytree=self.base_colsample_bytree,
+                        colsample_bylevel=self.base_colsample_bylevel,
+                        colsample_bynode=self.base_colsample_bynode,
+                        reg_alpha=self.base_reg_alpha,
+                        reg_lambda=self.base_reg_lambda,
+                        n_jobs=self.n_jobs,
+                        random_state=self.random_state,
+                    )
                 preds = np.around(model_node.predict(X), 6)
                 X = np.insert(X, X.shape[1], 0, axis=1)
                 X[:, -1] = preds

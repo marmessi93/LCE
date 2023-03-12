@@ -23,6 +23,7 @@ DOWNLOAD_URL = "https://github.com/LocalCascadeEnsemble/LCE"
 VERSION = __version__
 INSTALL_REQUIRES = [
     "hyperopt==0.2.7",
+    "lightgbm==3.3.5",
     "numpy==1.23.3",
     "pandas==1.5.0",
     "scikit-learn==1.1.2",

@@ -74,82 +74,94 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
 
     n_iter: int, default=10
         Number of iterations to set the hyperparameters of each node base
-        classifier (XGBoost) in Hyperopt.
+        classifier in Hyperopt.
 
     metric: string, default="accuracy"
-        The score of the base classifier (XGBoost) optimized by Hyperopt. Supported metrics
+        The score of the base classifier optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    xgb_n_estimators : tuple, default=(10, 50, 100)
-        The number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds. The tuple provided is
+    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+        The base classifier trained in each node of a tree.
+
+    base_n_estimators : tuple, default=(10, 50, 100)
+        The number of estimators of the base learner. The tuple provided is
         the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_max_depth : tuple, default=(3, 6, 9)
-        Maximum tree depth for XGBoost base learners. The tuple provided is the search
+    base_max_depth : tuple, default=(3, 6, 9)
+        Maximum tree depth for base learners. The tuple provided is the search
+        space used for the hyperparameter optimization (Hyperopt).
+        
+    base_num_leaves : tuple, default=(20, 50, 100, 500)
+        Maximum tree leaves (applicable to LightGBM only). The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
-        `learning_rate` of XGBoost. The learning rate corresponds to the
-        step size shrinkage used in update to prevent overfitting. After each
-        boosting step, the learning rate shrinks the feature weights to make the boosting
-        process more conservative. The tuple provided is the search space used for the
+    base_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
+        `learning_rate` of the base learner. The tuple provided is the search space used for the
         hyperparameter optimization (Hyperopt).
 
-    xgb_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
-        The type of booster to use. "gbtree" and "dart" use tree based models
+    base_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
+        The type of booster to use (applicable to XGBoost only). "gbtree" and "dart" use tree based models
         while "gblinear" uses linear functions. The tuple provided is the search space used
         for the hyperparameter optimization (Hyperopt).
+        
+    base_boosting_type : ("dart", "gbdt", "rf"), default=("gbdt",)
+        The type of boosting type to use (applicable to LightGBM only): "dart" dropouts meet Multiple Additive 
+        Regression Trees; "gbdt" traditional Gradient Boosting Decision Tree; "rf" Random Forest. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_gamma : tuple, default=(0, 1, 10)
+    base_gamma : tuple, default=(0, 1, 10)
         `gamma` of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
         The larger `gamma` is, the more conservative XGBoost algorithm will be.
         The tuple provided is the search space used for the hyperparameter optimization
         (Hyperopt).
 
-    xgb_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of XGBoost. `min_child_weight` defines the
+    base_min_child_weight : tuple, default=(1, 5, 15, 100)
+        `min_child_weight` of base learner. `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
-        partitioning. The larger `min_child_weight` is, the more conservative XGBoost
+        partitioning. The larger `min_child_weight` is, the more conservative the base learner
         algorithm will be. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
-    xgb_subsample : tuple, default=(1.0,)
-        XGBoost subsample ratio of the training instances. Setting it to 0.5 means
-        that XGBoost would randomly sample half of the training data prior to
+    base_subsample : tuple, default=(1.0,)
+        Base learner subsample ratio of the training instances. Setting it to 0.5 means
+        that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
+        
+    base_subsample_for_bin : tuple, default=(200000,)
+        Number of samples for constructing bins (applicable to LightGBM only). The tuple provided is the
+        search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bytree : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns when constructing each tree.
+    base_colsample_bytree : tuple, default=(1.0,)
+        Base learner subsample ratio of columns when constructing each tree.
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bylevel : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each level. Subsampling occurs
+    base_colsample_bylevel : tuple, default=(1.0,)
+        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bynode : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each node (split). Subsampling
+    base_colsample_bynode : tuple, default=(1.0,)
+        Subsample ratio of columns for each node split (applicable to XGBoost only). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
         from the set of columns chosen for the current level. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
-        term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple provided is the search space used for the hyperparameter
-        optimization (Hyperopt).
+    base_reg_alpha : tuple, default=(0,)
+        `reg_alpha` of the base learner. 
+        `reg_alpha` corresponds to the L1 regularization term on the weights. 
+        Increasing this value will make the base learner more conservative. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
-        `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
-        term on the weights. Increasing this value will make XGBoost model more
+    base_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
+        `reg_lambda` of the base learner. `reg_lambda` corresponds to the L2 regularization term 
+        on the weights. Increasing this value will make the base learner more
         conservative. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
@@ -161,7 +173,7 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         Controls the randomness of the bootstrapping of the samples used
         when building trees (if ``bootstrap=True``), the sampling of the
         features to consider when looking for the best split at each node
-        (if ``max_features < n_features``), the base classifier (XGBoost) and
+        (if ``max_features < n_features``), the base classifier and
         the Hyperopt algorithm.
 
     verbose : int, default=0
@@ -220,18 +232,22 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         min_samples_leaf=1,
         n_iter=10,
         metric="accuracy",
-        xgb_n_estimators=(10, 50, 100),
-        xgb_max_depth=(3, 6, 9),
-        xgb_learning_rate=(0.01, 0.1, 0.3, 0.5),
-        xgb_booster=("gbtree",),
-        xgb_gamma=(0, 1, 10),
-        xgb_min_child_weight=(1, 5, 15, 100),
-        xgb_subsample=(1.0,),
-        xgb_colsample_bytree=(1.0,),
-        xgb_colsample_bylevel=(1.0,),
-        xgb_colsample_bynode=(1.0,),
-        xgb_reg_alpha=(0,),
-        xgb_reg_lambda=(0.1, 1.0, 5.0),
+        base_learner="xgboost",
+        base_n_estimators=(10, 50, 100),
+        base_max_depth=(3, 6, 9),
+        base_num_leaves=(20, 50, 100, 500),
+        base_learning_rate=(0.01, 0.1, 0.3, 0.5),
+        base_booster=("gbtree",),
+        base_boosting_type=("gbdt",),
+        base_gamma=(0, 1, 10),
+        base_min_child_weight=(1, 5, 15, 100),
+        base_subsample=(1.0,),
+        base_subsample_for_bin=(200000,),
+        base_colsample_bytree=(1.0,),
+        base_colsample_bylevel=(1.0,),
+        base_colsample_bynode=(1.0,),
+        base_reg_alpha=(0,),
+        base_reg_lambda=(0.1, 1.0, 5.0),
         n_jobs=None,
         random_state=None,
         verbose=0,
@@ -246,18 +262,22 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         self.min_samples_leaf = min_samples_leaf
         self.n_iter = n_iter
         self.metric = metric
-        self.xgb_n_estimators = xgb_n_estimators
-        self.xgb_max_depth = xgb_max_depth
-        self.xgb_learning_rate = xgb_learning_rate
-        self.xgb_booster = xgb_booster
-        self.xgb_gamma = xgb_gamma
-        self.xgb_min_child_weight = xgb_min_child_weight
-        self.xgb_subsample = xgb_subsample
-        self.xgb_colsample_bytree = xgb_colsample_bytree
-        self.xgb_colsample_bylevel = xgb_colsample_bylevel
-        self.xgb_colsample_bynode = xgb_colsample_bynode
-        self.xgb_reg_alpha = xgb_reg_alpha
-        self.xgb_reg_lambda = xgb_reg_lambda
+        self.base_learner = base_learner
+        self.base_n_estimators = base_n_estimators
+        self.base_max_depth = base_max_depth
+        self.base_num_leaves = base_num_leaves
+        self.base_learning_rate = base_learning_rate
+        self.base_booster = base_booster
+        self.base_boosting_type = base_boosting_type
+        self.base_gamma = base_gamma
+        self.base_min_child_weight = base_min_child_weight
+        self.base_subsample = base_subsample
+        self.base_subsample_for_bin = base_subsample_for_bin
+        self.base_colsample_bytree = base_colsample_bytree
+        self.base_colsample_bylevel = base_colsample_bylevel
+        self.base_colsample_bynode = base_colsample_bynode
+        self.base_reg_alpha = base_reg_alpha
+        self.base_reg_lambda = base_reg_lambda
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
@@ -273,18 +293,22 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         est.min_samples_leaf = self.min_samples_leaf
         est.n_iter = self.n_iter
         est.metric = self.metric
-        est.xgb_n_estimators = self.xgb_n_estimators
-        est.xgb_max_depth = self.xgb_max_depth
-        est.xgb_learning_rate = self.xgb_learning_rate
-        est.xgb_booster = self.xgb_booster
-        est.xgb_gamma = self.xgb_gamma
-        est.xgb_min_child_weight = self.xgb_min_child_weight
-        est.xgb_subsample = self.xgb_subsample
-        est.xgb_colsample_bytree = self.xgb_colsample_bytree
-        est.xgb_colsample_bylevel = self.xgb_colsample_bylevel
-        est.xgb_colsample_bynode = self.xgb_colsample_bynode
-        est.xgb_reg_alpha = self.xgb_reg_alpha
-        est.xgb_reg_lambda = self.xgb_reg_lambda
+        est.base_learner = self.base_learner
+        est.base_n_estimators = self.base_n_estimators
+        est.base_max_depth = self.base_max_depth
+        est.base_num_leaves = self.base_num_leaves
+        est.base_learning_rate = self.base_learning_rate
+        est.base_booster = self.base_booster
+        est.base_boosting_type = self.base_boosting_type
+        est.base_gamma = self.base_gamma
+        est.base_min_child_weight = self.base_min_child_weight
+        est.base_subsample = self.base_subsample
+        est.base_subsample_for_bin = self.base_subsample_for_bin        
+        est.base_colsample_bytree = self.base_colsample_bytree        
+        est.base_colsample_bylevel = self.base_colsample_bylevel
+        est.base_colsample_bynode = self.base_colsample_bynode
+        est.base_reg_alpha = self.base_reg_alpha
+        est.base_reg_alpha = self.base_reg_lambda
         est.n_jobs = self.n_jobs
         est.random_state = self.random_state
         est.verbose = self.verbose
@@ -515,82 +539,94 @@ class LCERegressor(RegressorMixin, BaseEstimator):
 
     n_iter: int, default=10
         Number of iterations to set the hyperparameters of each node base
-        regressor (XGBoost) in Hyperopt.
+        regressor in Hyperopt.
 
     metric: string, default="neg_mean_squared_error"
-        The score of the base regressor (XGBoost) optimized by Hyperopt. Supported metrics
+        The score of the base regressor optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    xgb_n_estimators : tuple, default=(10, 50, 100)
-        The number of XGBoost estimators. The number of estimators of
-        XGBoost corresponds to the number of boosting rounds. The tuple provided is
+    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+        The base classifier trained in each node of a tree.
+
+    base_n_estimators : tuple, default=(10, 50, 100)
+        The number of estimators of the base learner. The tuple provided is
         the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_max_depth : tuple, default=(3, 6, 9)
-        Maximum tree depth for XGBoost base learners. The tuple provided is the search
+    base_max_depth : tuple, default=(3, 6, 9)
+        Maximum tree depth for base learners. The tuple provided is the search
+        space used for the hyperparameter optimization (Hyperopt).
+        
+    base_num_leaves : tuple, default=(20, 50, 100, 500)
+        Maximum tree leaves (applicable to LightGBM only). The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
-        `learning_rate` of XGBoost. The learning rate corresponds to the
-        step size shrinkage used in update to prevent overfitting. After each
-        boosting step, the learning rate shrinks the feature weights to make the boosting
-        process more conservative. The tuple provided is the search space used for the
+    base_learning_rate : tuple, default=(0.01, 0.1, 0.3, 0.5)
+        `learning_rate` of the base learner. The tuple provided is the search space used for the
         hyperparameter optimization (Hyperopt).
 
-    xgb_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
-        The type of booster to use. "gbtree" and "dart" use tree based models
+    base_booster : ("dart", "gblinear", "gbtree"), default=("gbtree",)
+        The type of booster to use (applicable to XGBoost only). "gbtree" and "dart" use tree based models
         while "gblinear" uses linear functions. The tuple provided is the search space used
         for the hyperparameter optimization (Hyperopt).
+        
+    base_boosting_type : ("dart", "gbdt", "rf"), default=("gbdt",)
+        The type of boosting type to use (applicable to LightGBM only): "dart" dropouts meet Multiple Additive 
+        Regression Trees; "gbdt" traditional Gradient Boosting Decision Tree; "rf" Random Forest. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_gamma : tuple, default=(0, 1, 10)
+    base_gamma : tuple, default=(0, 1, 10)
         `gamma` of XGBoost. `gamma` corresponds to the minimum loss reduction
         required to make a further partition on a leaf node of the tree.
         The larger `gamma` is, the more conservative XGBoost algorithm will be.
         The tuple provided is the search space used for the hyperparameter optimization
         (Hyperopt).
 
-    xgb_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of XGBoost. `min_child_weight` defines the
+    base_min_child_weight : tuple, default=(1, 5, 15, 100)
+        `min_child_weight` of base learner. `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
-        partitioning. The larger `min_child_weight` is, the more conservative XGBoost
+        partitioning. The larger `min_child_weight` is, the more conservative the base learner
         algorithm will be. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
-    xgb_subsample : tuple, default=(1.0,)
-        XGBoost subsample ratio of the training instances. Setting it to 0.5 means
-        that XGBoost would randomly sample half of the training data prior to
+    base_subsample : tuple, default=(1.0,)
+        Base learner subsample ratio of the training instances. Setting it to 0.5 means
+        that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
+        
+    base_subsample_for_bin : tuple, default=(200000,)
+        Number of samples for constructing bins (applicable to LightGBM only). The tuple provided is the
+        search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bytree : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns when constructing each tree.
+    base_colsample_bytree : tuple, default=(1.0,)
+        Base learner subsample ratio of columns when constructing each tree.
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bylevel : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each level. Subsampling occurs
+    base_colsample_bylevel : tuple, default=(1.0,)
+        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_colsample_bynode : tuple, default=(1.0,)
-        XGBoost subsample ratio of columns for each node (split). Subsampling
+    base_colsample_bynode : tuple, default=(1.0,)
+        Subsample ratio of columns for each node split (applicable to XGBoost only). Subsampling
         occurs once every time a new split is evaluated. Columns are subsampled
         from the set of columns chosen for the current level. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of XGBoost. `reg_alpha` corresponds to the L1 regularization
-        term on the weights. Increasing this value will make XGBoost model more
-        conservative. The tuple provided is the search space used for the hyperparameter
-        optimization (Hyperopt).
+    base_reg_alpha : tuple, default=(0,)
+        `reg_alpha` of the base learner. 
+        `reg_alpha` corresponds to the L1 regularization term on the weights. 
+        Increasing this value will make the base learner more conservative. 
+        The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
 
-    xgb_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
-        `reg_lambda` of XGBoost. `reg_lambda` corresponds to the L2 regularization
-        term on the weights. Increasing this value will make XGBoost model more
+    base_reg_lambda : tuple, default=(0.1, 1.0, 5.0)
+        `reg_lambda` of the base learner. `reg_lambda` corresponds to the L2 regularization term 
+        on the weights. Increasing this value will make the base learner more
         conservative. The tuple provided is the search space used for the hyperparameter
         optimization (Hyperopt).
 
@@ -648,18 +684,22 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         min_samples_leaf=1,
         metric="neg_mean_squared_error",
         n_iter=10,
-        xgb_n_estimators=(10, 50, 100),
-        xgb_max_depth=(3, 6, 9),
-        xgb_learning_rate=(0.01, 0.1, 0.3, 0.5),
-        xgb_booster=("gbtree",),
-        xgb_gamma=(0, 1, 10),
-        xgb_min_child_weight=(1, 5, 15, 100),
-        xgb_subsample=(1.0,),
-        xgb_colsample_bytree=(1.0,),
-        xgb_colsample_bylevel=(1.0,),
-        xgb_colsample_bynode=(1.0,),
-        xgb_reg_alpha=(0,),
-        xgb_reg_lambda=(0.1, 1.0, 5.0),
+        base_learner="xgboost",
+        base_n_estimators=(10, 50, 100),
+        base_max_depth=(3, 6, 9),
+        base_num_leaves=(20, 50, 100, 500),
+        base_learning_rate=(0.01, 0.1, 0.3, 0.5),
+        base_booster=("gbtree",),
+        base_boosting_type=("gbdt",),
+        base_gamma=(0, 1, 10),
+        base_min_child_weight=(1, 5, 15, 100),
+        base_subsample=(1.0,),
+        base_subsample_for_bin=(200000,),
+        base_colsample_bytree=(1.0,),
+        base_colsample_bylevel=(1.0,),
+        base_colsample_bynode=(1.0,),
+        base_reg_alpha=(0,),
+        base_reg_lambda=(0.1, 1.0, 5.0),
         n_jobs=None,
         random_state=None,
         verbose=0,
@@ -674,18 +714,22 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         self.min_samples_leaf = min_samples_leaf
         self.n_iter = n_iter
         self.metric = metric
-        self.xgb_n_estimators = xgb_n_estimators
-        self.xgb_max_depth = xgb_max_depth
-        self.xgb_learning_rate = xgb_learning_rate
-        self.xgb_booster = xgb_booster
-        self.xgb_gamma = xgb_gamma
-        self.xgb_min_child_weight = xgb_min_child_weight
-        self.xgb_subsample = xgb_subsample
-        self.xgb_colsample_bytree = xgb_colsample_bytree
-        self.xgb_colsample_bylevel = xgb_colsample_bylevel
-        self.xgb_colsample_bynode = xgb_colsample_bynode
-        self.xgb_reg_alpha = xgb_reg_alpha
-        self.xgb_reg_lambda = xgb_reg_lambda
+        self.base_learner = base_learner
+        self.base_n_estimators = base_n_estimators
+        self.base_max_depth = base_max_depth
+        self.base_num_leaves = base_num_leaves
+        self.base_learning_rate = base_learning_rate
+        self.base_booster = base_booster
+        self.base_boosting_type = base_boosting_type
+        self.base_gamma = base_gamma
+        self.base_min_child_weight = base_min_child_weight
+        self.base_subsample = base_subsample
+        self.base_subsample_for_bin = base_subsample_for_bin
+        self.base_colsample_bytree = base_colsample_bytree
+        self.base_colsample_bylevel = base_colsample_bylevel
+        self.base_colsample_bynode = base_colsample_bynode
+        self.base_reg_alpha = base_reg_alpha
+        self.base_reg_lambda = base_reg_lambda
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
@@ -700,18 +744,22 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         est.min_samples_leaf = self.min_samples_leaf
         est.n_iter = self.n_iter
         est.metric = self.metric
-        est.xgb_n_estimators = self.xgb_n_estimators
-        est.xgb_max_depth = self.xgb_max_depth
-        est.xgb_learning_rate = self.xgb_learning_rate
-        est.xgb_booster = self.xgb_booster
-        est.xgb_gamma = self.xgb_gamma
-        est.xgb_min_child_weight = self.xgb_min_child_weight
-        est.xgb_subsample = self.xgb_subsample
-        est.xgb_colsample_bytree = self.xgb_colsample_bytree
-        est.xgb_colsample_bylevel = self.xgb_colsample_bylevel
-        est.xgb_colsample_bynode = self.xgb_colsample_bynode
-        est.xgb_reg_alpha = self.xgb_reg_alpha
-        est.xgb_reg_lambda = self.xgb_reg_lambda
+        est.base_learner = self.base_learner
+        est.base_n_estimators = self.base_n_estimators
+        est.base_max_depth = self.base_max_depth
+        est.base_num_leaves = self.base_num_leaves
+        est.base_learning_rate = self.base_learning_rate
+        est.base_booster = self.base_booster
+        est.base_boosting_type = self.base_boosting_type
+        est.base_gamma = self.base_gamma
+        est.base_min_child_weight = self.base_min_child_weight
+        est.base_subsample = self.base_subsample
+        est.base_subsample_for_bin = self.base_subsample_for_bin        
+        est.base_colsample_bytree = self.base_colsample_bytree        
+        est.base_colsample_bylevel = self.base_colsample_bylevel
+        est.base_colsample_bynode = self.base_colsample_bynode
+        est.base_reg_alpha = self.base_reg_alpha
+        est.base_reg_alpha = self.base_reg_lambda
         est.n_jobs = self.n_jobs
         est.random_state = self.random_state
         est.verbose = self.verbose
