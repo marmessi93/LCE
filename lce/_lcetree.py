@@ -1108,54 +1108,54 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             def _create_node(X, y, depth, container):
                 """Create a node in the tree."""
-                # Add base learner predictions as features to the dataset
-                if self.base_learner=="lightgbm":
-                    model_node = base_dict[self.base_learner](
-                        X,
-                        y,
-                        n_iter=self.n_iter,
-                        metric=self.metric,
-                        n_estimators=self.base_n_estimators,
-                        max_depth=self.base_max_depth,
-                        num_leaves=self.base_num_leaves,
-                        learning_rate=self.base_learning_rate,
-                        boosting_type=self.base_boosting_type,
-                        min_child_weight=self.base_min_child_weight,
-                        subsample=self.base_subsample,
-                        subsample_for_bin=self.base_subsample_for_bin,
-                        colsample_bytree=self.base_colsample_bytree,
-                        reg_alpha=self.base_reg_alpha,
-                        reg_lambda=self.base_reg_lambda,
-                        n_jobs=self.n_jobs,
-                        random_state=self.random_state,
-                    )
-                else:
-                    model_node = base_dict[self.base_learner](
-                        X,
-                        y,
-                        n_iter=self.n_iter,
-                        metric=self.metric,
-                        n_estimators=self.base_n_estimators,
-                        max_depth=self.base_max_depth,
-                        learning_rate=self.base_learning_rate,
-                        booster=self.base_booster,
-                        gamma=self.base_gamma,
-                        min_child_weight=self.base_min_child_weight,
-                        subsample=self.base_subsample,
-                        colsample_bytree=self.base_colsample_bytree,
-                        colsample_bylevel=self.base_colsample_bylevel,
-                        colsample_bynode=self.base_colsample_bynode,
-                        reg_alpha=self.base_reg_alpha,
-                        reg_lambda=self.base_reg_lambda,
-                        n_jobs=self.n_jobs,
-                        random_state=self.random_state,
-                    )
-                preds = np.around(model_node.predict(X), 6)
                 X = np.insert(X, X.shape[1], 0, axis=1)
-                X[:, -1] = preds
-
-                # Split
-                if y.size > 1:
+                y_size = y.size
+                # Add base learner predictions as features to the dataset
+                if y_size > 1:
+                    if self.base_learner=="lightgbm":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            num_leaves=self.base_num_leaves,
+                            learning_rate=self.base_learning_rate,
+                            boosting_type=self.base_boosting_type,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            subsample_for_bin=self.base_subsample_for_bin,
+                            colsample_bytree=self.base_colsample_bytree,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    else:
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            booster=self.base_booster,
+                            gamma=self.base_gamma,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            colsample_bytree=self.base_colsample_bytree,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            colsample_bynode=self.base_colsample_bynode,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    preds = np.around(model_node.predict(X), 6)
+                    X[:, -1] = preds
+                    
                     split = DecisionTreeRegressor(
                         criterion=self.criterion,
                         splitter=self.splitter,
@@ -1164,7 +1164,10 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                         random_state=self.random_state,
                     )
                     split.fit(X, y)
+                    
                 else:
+                    model_node = None
+                    X[:, -1] = y
                     split = None
 
                 # Node information
@@ -1172,6 +1175,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     "index": container["index_node_global"],
                     "model": model_node,
                     "data": (X, y),
+                    "y_size": y_size,
                     "split": split,
                     "missing": {"missing": None, "missing_only": None},
                     "missing_side": None,
@@ -1289,56 +1293,60 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             def _create_node_missing(X, y, depth, container):
                 """Create a node in the tree."""
-                # Add base learner predictions as features to the dataset
-                if self.base_learner=="lightgbm":
-                    model_node = base_dict[self.base_learner](
-                        X,
-                        y,
-                        n_iter=self.n_iter,
-                        metric=self.metric,
-                        n_estimators=self.base_n_estimators,
-                        max_depth=self.base_max_depth,
-                        num_leaves=self.base_num_leaves,
-                        learning_rate=self.base_learning_rate,
-                        boosting_type=self.base_boosting_type,
-                        min_child_weight=self.base_min_child_weight,
-                        subsample=self.base_subsample,
-                        subsample_for_bin=self.base_subsample_for_bin,
-                        colsample_bytree=self.base_colsample_bytree,
-                        reg_alpha=self.base_reg_alpha,
-                        reg_lambda=self.base_reg_lambda,
-                        n_jobs=self.n_jobs,
-                        random_state=self.random_state,
-                    )
-                else:
-                    model_node = base_dict[self.base_learner](
-                        X,
-                        y,
-                        n_iter=self.n_iter,
-                        metric=self.metric,
-                        n_estimators=self.base_n_estimators,
-                        max_depth=self.base_max_depth,
-                        learning_rate=self.base_learning_rate,
-                        booster=self.base_booster,
-                        gamma=self.base_gamma,
-                        min_child_weight=self.base_min_child_weight,
-                        subsample=self.base_subsample,
-                        colsample_bytree=self.base_colsample_bytree,
-                        colsample_bylevel=self.base_colsample_bylevel,
-                        colsample_bynode=self.base_colsample_bynode,
-                        reg_alpha=self.base_reg_alpha,
-                        reg_lambda=self.base_reg_lambda,
-                        n_jobs=self.n_jobs,
-                        random_state=self.random_state,
-                    )
-                preds = np.around(model_node.predict(X), 6)
                 X = np.insert(X, X.shape[1], 0, axis=1)
-                X[:, -1] = preds
+                y_size = y.size
+                # Add base learner predictions as features to the dataset
+                if y_size > 1:
+                    if self.base_learner=="lightgbm":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            num_leaves=self.base_num_leaves,
+                            learning_rate=self.base_learning_rate,
+                            boosting_type=self.base_boosting_type,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            subsample_for_bin=self.base_subsample_for_bin,
+                            colsample_bytree=self.base_colsample_bytree,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    else:
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            booster=self.base_booster,
+                            gamma=self.base_gamma,
+                            min_child_weight=self.base_min_child_weight,
+                            subsample=self.base_subsample,
+                            colsample_bytree=self.base_colsample_bytree,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            colsample_bynode=self.base_colsample_bynode,
+                            reg_alpha=self.base_reg_alpha,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    preds = np.around(model_node.predict(X), 6)
+                    X[:, -1] = preds
+                else:
+                    model_node = None
+                    X[:, -1] = y
 
                 # Missing data information
                 nans = np.isnan(X).any(axis=1)
                 num_nans = nans.sum()
-                y_size = y.size
                 if num_nans > 0:
                     missing = True
                     if num_nans == y_size:
@@ -1371,6 +1379,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     "index": container["index_node_global"],
                     "model": model_node,
                     "data": (X, y),
+                    "y_size": y_size,
                     "split": split,
                     "missing": {"missing": missing, "missing_only": missing_only},
                     "missing_side": None,
@@ -1550,9 +1559,12 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         """
 
         def _base(node, X):
-            y_pred = np.around(node["model"].predict(X[:, 1:]), 6)
             X = np.insert(X, X.shape[1], 0, axis=1)
-            X[:, -1] = y_pred
+            if node["y_size"] > 1:
+                y_pred = np.around(node["model"].predict(X[:, 1:]), 6)
+                X[:, -1] = y_pred
+            else:
+                X[:, -1] = X[:, -2]
             return X
 
         def _predict(node, X, y_pred_final=None):
