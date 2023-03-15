@@ -10,7 +10,7 @@ The construction of an ensemble method involves combining accurate and diverse i
 There are **two complementary ways** to generate diverse predictors: *(i)* by **changing the training data distribution** and *(ii)* by **learning different parts of the training data**.
 
 **LCE adopts these two diversification approaches.** 
-First, *(i)* LCE combines the two well-known methods that modify the distribution of the original training data with complementary effects on the bias-variance trade-off: bagging [2]_ (variance reduction) and boosting [9]_ (bias reduction). 
+First, *(i)* LCE combines the two well-known methods that modify the distribution of the original training data with complementary effects on the bias-variance trade-off: bagging [2]_ (variance reduction) and boosting [10]_ (bias reduction). 
 Then, *(ii)* LCE learns different parts of the training data to capture new relationships that cannot be discovered globally based on a divide-and-conquer strategy (a decision tree). 
 Before detailing how LCE combines these methods, we introduce the key concepts behind them that will be used in the explanation of LCE.
 
@@ -47,7 +47,8 @@ LCE is represented in the following Figure.
 Specifically, LCE is based on cascade generalization: it uses a set of predictors sequentially, and adds new attributes to the input dataset at each stage. 
 The new attributes are derived from the output given by a predictor (e.g., class probabilities for a classifier), called a base learner. 
 LCE applies cascade generalization locally following a divide-and-conquer strategy - a decision tree, and reduces bias across a decision tree through the use of boosting-based predictors as base learners. 
-The current best performing state-of-the-art boosting algorithm is adopted as base learner (XGBoost, e.g., XGB¹°, XGB¹¹ in above Figure). 
+The current best performing state-of-the-art boosting algorithm is adopted as base learner by default (XGBoost, e.g., XGB¹°, XGB¹¹ in above Figure). 
+LightGBM [9]_ can also be chosen as base learner.
 When growing the tree, boosting is propagated down the tree by adding the output of the base learner at each decision node as new attributes to the dataset (e.g., XGB¹°(D¹) in above Figure). 
 Prediction outputs indicate the ability of the base learner to correctly predict a sample. 
 At the next tree level, the outputs added to the dataset are exploited by the base learner as a weighting scheme to focus more on previously mispredicted samples. 
@@ -88,7 +89,8 @@ References
 .. [6] Fauvel, K., V. Masson, E. Fromont, P. Faverdin and A. Termier. Towards Sustainable Dairy Management - A Machine Learning Enhanced Method for Estrus Detection. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 2019
 .. [7] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
 .. [8] Grinsztajn, L., E. Oyallon and G. Varoquaux. Why Do Tree-Based Models still Outperform Deep Learning on Typical Tabular Data? In Proceedings of the 36th Conference on Neural Information Processing Systems Datasets and Benchmarks Track, 2022
-.. [9] Schapire, R. The Strength of Weak Learnability. Machine Learning, 5(2):197–227, 1990
+.. [9] Ke, G., Q. Meng, T. Finley, T. Wang, W. Chen, W. Ma, Q. Ye and T. Liu. LightGBM: A Highly Efficient Gradient Boosting Decision Tree.  In Proceedings of the 31st International Conference on Neural Information Processing Systems, 2017
+.. [10] Schapire, R. The Strength of Weak Learnability. Machine Learning, 5(2):197–227, 1990
 
 
 
@@ -196,7 +198,7 @@ Regression
 	
 .. code-block::
 	
-	The mean squared error (MSE) on test set: 3523
+	The mean squared error (MSE) on test set: 3761
 	  
 
 - **Example 4: LCE with missing values**
@@ -233,7 +235,7 @@ This example illustrates the robustness of LCE to missing values. The Diabetes t
 
 .. code-block::
 	
-	The mean squared error (MSE) on test set: 3910
+	The mean squared error (MSE) on test set: 3895
 	
 
 Python Source Files
