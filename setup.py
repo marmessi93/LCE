@@ -22,6 +22,7 @@ LICENSE = "Apache-2.0"
 DOWNLOAD_URL = "https://github.com/LocalCascadeEnsemble/LCE"
 VERSION = __version__
 INSTALL_REQUIRES = [
+    "catboost==1.1.1",
     "hyperopt==0.2.7",
     "lightgbm==3.3.5",
     "numpy==1.23.3",

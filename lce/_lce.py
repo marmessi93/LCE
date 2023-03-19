@@ -80,7 +80,7 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         The score of the base classifier optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+    base_learner : {"catboost", "lightgbm", "xgboost"}, default="xgboost"
         The base classifier trained in each node of a tree.
 
     base_n_estimators : tuple, default=(10, 50, 100)
@@ -117,7 +117,7 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         (Hyperopt).
 
     base_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of base learner. `min_child_weight` defines the
+        `min_child_weight` of base learner (applicable to LightGBM and XGBoost only). `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
@@ -126,8 +126,8 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         optimization (Hyperopt).
 
     base_subsample : tuple, default=(1.0,)
-        Base learner subsample ratio of the training instances. Setting it to 0.5 means
-        that the base learner would randomly sample half of the training data prior to
+        Base learner subsample ratio of the training instances (applicable to LightGBM and XGBoost only). 
+        Setting it to 0.5 means that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
@@ -137,12 +137,12 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         search space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bytree : tuple, default=(1.0,)
-        Base learner subsample ratio of columns when constructing each tree.
+        Base learner subsample ratio of columns when constructing each tree (applicable to LightGBM and XGBoost only).
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bylevel : tuple, default=(1.0,)
-        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
+        Subsample ratio of columns for each level (applicable to CatBoost and XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
@@ -154,7 +154,7 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         space used for the hyperparameter optimization (Hyperopt).
 
     base_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of the base learner. 
+        `reg_alpha` of the base learner (applicable to LightGBM and XGBoost only). 
         `reg_alpha` corresponds to the L1 regularization term on the weights. 
         Increasing this value will make the base learner more conservative. 
         The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
@@ -545,7 +545,7 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         The score of the base regressor optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+    base_learner : {"catboost", "lightgbm", "xgboost"}, default="xgboost"
         The base classifier trained in each node of a tree.
 
     base_n_estimators : tuple, default=(10, 50, 100)
@@ -582,7 +582,7 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         (Hyperopt).
 
     base_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of base learner. `min_child_weight` defines the
+        `min_child_weight` of base learner (applicable to LightGBM and XGBoost only). `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
@@ -591,8 +591,8 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         optimization (Hyperopt).
 
     base_subsample : tuple, default=(1.0,)
-        Base learner subsample ratio of the training instances. Setting it to 0.5 means
-        that the base learner would randomly sample half of the training data prior to
+        Base learner subsample ratio of the training instances (applicable to LightGBM and XGBoost only). 
+        Setting it to 0.5 means that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
@@ -602,12 +602,12 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         search space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bytree : tuple, default=(1.0,)
-        Base learner subsample ratio of columns when constructing each tree.
+        Base learner subsample ratio of columns when constructing each tree (applicable to LightGBM and XGBoost only).
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bylevel : tuple, default=(1.0,)
-        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
+        Subsample ratio of columns for each level (applicable to CatBoost and XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
@@ -619,7 +619,7 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         space used for the hyperparameter optimization (Hyperopt).
 
     base_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of the base learner. 
+        `reg_alpha` of the base learner (applicable to LightGBM and XGBoost only). 
         `reg_alpha` corresponds to the L1 regularization term on the weights. 
         Increasing this value will make the base learner more conservative. 
         The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
