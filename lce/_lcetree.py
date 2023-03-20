@@ -3,8 +3,10 @@ from joblib import delayed, Parallel
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from ._xgboost import xgb_opt_classifier, xgb_opt_regressor
+from ._catboost import catboost_opt_classifier, catboost_opt_regressor
 from ._lightgbm import lgbm_opt_classifier, lgbm_opt_regressor
+from ._xgboost import xgb_opt_classifier, xgb_opt_regressor
+
 
 
 class LCETreeClassifier(ClassifierMixin, BaseEstimator):
@@ -64,7 +66,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         The score of the base classifier (XGBoost) optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+    base_learner : {"catboost", "lightgbm", "xgboost"}, default="xgboost"
         The base classifier trained in each node of a tree.
 
     base_n_estimators : tuple, default=(10, 50, 100)
@@ -101,7 +103,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         (Hyperopt).
 
     base_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of base learner. `min_child_weight` defines the
+        `min_child_weight` of base learner (applicable to LightGBM and XGBoost only). `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
@@ -110,8 +112,8 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         optimization (Hyperopt).
 
     base_subsample : tuple, default=(1.0,)
-        Base learner subsample ratio of the training instances. Setting it to 0.5 means
-        that the base learner would randomly sample half of the training data prior to
+        Base learner subsample ratio of the training instances (applicable to LightGBM and XGBoost only). 
+        Setting it to 0.5 means that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
@@ -121,12 +123,12 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         search space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bytree : tuple, default=(1.0,)
-        Base learner subsample ratio of columns when constructing each tree.
+        Base learner subsample ratio of columns when constructing each tree (applicable to LightGBM and XGBoost only).
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bylevel : tuple, default=(1.0,)
-        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
+        Subsample ratio of columns for each level (applicable to CatBoost and XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
@@ -138,7 +140,7 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         space used for the hyperparameter optimization (Hyperopt).
 
     base_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of the base learner. 
+        `reg_alpha` of the base learner (applicable to LightGBM and XGBoost only). 
         `reg_alpha` corresponds to the L1 regularization term on the weights. 
         Increasing this value will make the base learner more conservative. 
         The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
@@ -246,7 +248,8 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
         """
         self.classes_ = np.unique(y)
         self.n_features_in_ = X.shape[1]
-        base_dict = {"lightgbm": lgbm_opt_classifier, 
+        base_dict = {"catboost": catboost_opt_classifier, 
+                     "lightgbm": lgbm_opt_classifier, 
                      "xgboost": xgb_opt_classifier}
         
         def _build_tree(X, y):
@@ -260,7 +263,21 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 
                 if y_unique_size > 1:                
                     # Add base learner predictions as features to the dataset
-                    if self.base_learner=="lightgbm":
+                    if self.base_learner=="catboost":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    elif self.base_learner=="lightgbm":
                         model_node = base_dict[self.base_learner](
                             X,
                             y,
@@ -459,7 +476,21 @@ class LCETreeClassifier(ClassifierMixin, BaseEstimator):
                 
                 if y_unique_size > 1:                
                     # Add base learner predictions as features to the dataset
-                    if self.base_learner=="lightgbm":
+                    if self.base_learner=="catboost":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    elif self.base_learner=="lightgbm":
                         model_node = base_dict[self.base_learner](
                             X,
                             y,
@@ -923,7 +954,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         The score of the base regressor optimized by Hyperopt. Supported metrics
         are the ones from `scikit-learn <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
-    base_learner : {"lightgbm", "xgboost"}, default="xgboost"
+    base_learner : {"catboost", "lightgbm", "xgboost"}, default="xgboost"
         The base classifier trained in each node of a tree.
 
     base_n_estimators : tuple, default=(10, 50, 100)
@@ -960,7 +991,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         (Hyperopt).
 
     base_min_child_weight : tuple, default=(1, 5, 15, 100)
-        `min_child_weight` of base learner. `min_child_weight` defines the
+        `min_child_weight` of base learner (applicable to LightGBM and XGBoost only). `min_child_weight` defines the
         minimum sum of instance weight (hessian) needed in a child. If the tree
         partition step results in a leaf node with the sum of instance weight
         less than `min_child_weight`, then the building process will give up further
@@ -969,8 +1000,8 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         optimization (Hyperopt).
 
     base_subsample : tuple, default=(1.0,)
-        Base learner subsample ratio of the training instances. Setting it to 0.5 means
-        that the base learner would randomly sample half of the training data prior to
+        Base learner subsample ratio of the training instances (applicable to LightGBM and XGBoost only). 
+        Setting it to 0.5 means that the base learner would randomly sample half of the training data prior to
         growing trees, and this will prevent overfitting. Subsampling will occur
         once in every boosting iteration. The tuple provided is the search space used for
         the hyperparameter optimization (Hyperopt).
@@ -980,12 +1011,12 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         search space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bytree : tuple, default=(1.0,)
-        Base learner subsample ratio of columns when constructing each tree.
+        Base learner subsample ratio of columns when constructing each tree (applicable to LightGBM and XGBoost only).
         Subsampling occurs once for every tree constructed. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
 
     base_colsample_bylevel : tuple, default=(1.0,)
-        Subsample ratio of columns for each level (applicable to XGBoost only). Subsampling occurs
+        Subsample ratio of columns for each level (applicable to CatBoost and XGBoost only). Subsampling occurs
         once for every new depth level reached in a tree. Columns are subsampled
         from the set of columns chosen for the current tree. The tuple provided is the search
         space used for the hyperparameter optimization (Hyperopt).
@@ -997,7 +1028,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         space used for the hyperparameter optimization (Hyperopt).
 
     base_reg_alpha : tuple, default=(0,)
-        `reg_alpha` of the base learner. 
+        `reg_alpha` of the base learner (applicable to LightGBM and XGBoost only). 
         `reg_alpha` corresponds to the L1 regularization term on the weights. 
         Increasing this value will make the base learner more conservative. 
         The tuple provided is the search space used for the hyperparameter optimization (Hyperopt).
@@ -1099,7 +1130,8 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         self : object
         """
         self.n_features_in_ = X.shape[1]
-        base_dict = {"lightgbm": lgbm_opt_regressor, 
+        base_dict = {"catboost": catboost_opt_regressor, 
+                     "lightgbm": lgbm_opt_regressor, 
                      "xgboost": xgb_opt_regressor}
 
         def _build_tree(X, y):
@@ -1108,11 +1140,24 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             def _create_node(X, y, depth, container):
                 """Create a node in the tree."""
-                X = np.insert(X, X.shape[1], 0, axis=1)
                 y_size = y.size
                 # Add base learner predictions as features to the dataset
                 if y_size > 1:
-                    if self.base_learner=="lightgbm":
+                    if self.base_learner=="catboost":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    elif self.base_learner=="lightgbm":
                         model_node = base_dict[self.base_learner](
                             X,
                             y,
@@ -1154,7 +1199,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                             random_state=self.random_state,
                         )
                     preds = np.around(model_node.predict(X), 6)
-                    X[:, -1] = preds
+                    X = np.column_stack((X, preds))
                     
                     split = DecisionTreeRegressor(
                         criterion=self.criterion,
@@ -1167,7 +1212,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     
                 else:
                     model_node = None
-                    X[:, -1] = y
+                    X = np.column_stack((X, y))
                     split = None
 
                 # Node information
@@ -1293,11 +1338,24 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             def _create_node_missing(X, y, depth, container):
                 """Create a node in the tree."""
-                X = np.insert(X, X.shape[1], 0, axis=1)
                 y_size = y.size
                 # Add base learner predictions as features to the dataset
                 if y_size > 1:
-                    if self.base_learner=="lightgbm":
+                    if self.base_learner=="catboost":
+                        model_node = base_dict[self.base_learner](
+                            X,
+                            y,
+                            n_iter=self.n_iter,
+                            metric=self.metric,
+                            n_estimators=self.base_n_estimators,
+                            max_depth=self.base_max_depth,
+                            learning_rate=self.base_learning_rate,
+                            colsample_bylevel=self.base_colsample_bylevel,
+                            reg_lambda=self.base_reg_lambda,
+                            n_jobs=self.n_jobs,
+                            random_state=self.random_state,
+                        )
+                    elif self.base_learner=="lightgbm":
                         model_node = base_dict[self.base_learner](
                             X,
                             y,
@@ -1339,10 +1397,10 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                             random_state=self.random_state,
                         )
                     preds = np.around(model_node.predict(X), 6)
-                    X[:, -1] = preds
+                    X = np.column_stack((X, preds))
                 else:
                     model_node = None
-                    X[:, -1] = y
+                    X = np.column_stack((X, y))
 
                 # Missing data information
                 nans = np.isnan(X).any(axis=1)
@@ -1559,12 +1617,11 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         """
 
         def _base(node, X):
-            X = np.insert(X, X.shape[1], 0, axis=1)
             if node["y_size"] > 1:
                 y_pred = np.around(node["model"].predict(X[:, 1:]), 6)
-                X[:, -1] = y_pred
+                X = np.column_stack((X, y_pred))
             else:
-                X[:, -1] = X[:, -2]
+                X = np.column_stack((X, X[:, -1]))
             return X
 
         def _predict(node, X, y_pred_final=None):

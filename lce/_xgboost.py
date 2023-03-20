@@ -122,7 +122,7 @@ def xgb_opt_classifier(
         ``n_jobs=None`` means 1. ``n_jobs=-1`` means using all processors.
 
     random_state : int, RandomState instance or None, default=None
-        Controls the randomness of the base classifier XGBoost and
+        Controls the randomness of the base learner XGBoost and
         the Hyperopt algorithm.
 
     Returns
@@ -326,7 +326,7 @@ def xgb_opt_regressor(
         ``n_jobs=None`` means 1. ``n_jobs=-1`` means using all processors.
 
     random_state : int, RandomState instance or None, default=None
-        Controls the randomness of the base classifier XGBoost and
+        Controls the randomness of the base learner XGBoost and
         the Hyperopt algorithm.
 
     Returns

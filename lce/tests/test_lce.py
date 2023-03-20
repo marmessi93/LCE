@@ -52,14 +52,14 @@ class Test(unittest.TestCase):
     def test_classifier(self):
         # Load Breast Cancer dataset
         data = load_breast_cancer()
-
-        # Fit and predict (base learner: XGBoost)
+        
+        # Fit and predict (base learner: CatBoost)
         with warnings.catch_warnings():
             clf = LCEClassifier(
                 n_estimators=3,
                 max_depth=50,
                 min_samples_leaf=1,
-                base_learner="xgboost",
+                base_learner="catboost",
                 random_state=0,
                 verbose=1,
             ).fit(data.data, data.target)
@@ -77,11 +77,24 @@ class Test(unittest.TestCase):
             ).fit(data.data, data.target)
             clf.predict(data.data)
 
+        # Fit and predict (base learner: XGBoost)
+        with warnings.catch_warnings():
+            clf = LCEClassifier(
+                n_estimators=3,
+                max_depth=50,
+                min_samples_leaf=1,
+                base_learner="xgboost",
+                random_state=0,
+                verbose=1,
+            ).fit(data.data, data.target)
+            clf.predict(data.data)
+    
+
     def test_classifier_missing(self):
         # Load Iris dataset
         data = load_iris()
-
-        # Input 2% of missing values per variable (base learner: XGBoost)
+        
+        # Input 2% of missing values per variable (base learner: CatBoost)
         np.random.seed(0)
         m = 0.02
         for j in range(0, data.data.shape[1]):
@@ -94,7 +107,7 @@ class Test(unittest.TestCase):
                 n_estimators=3,
                 max_depth=50,
                 min_samples_leaf=1,
-                base_learner="xgboost",
+                base_learner="catboost",
                 random_state=0,
                 verbose=1,
             ).fit(temp, data.target)
@@ -114,6 +127,25 @@ class Test(unittest.TestCase):
                 max_depth=50,
                 min_samples_leaf=1,
                 base_learner="lightgbm",
+                random_state=0,
+                verbose=1,
+            ).fit(temp, data.target)
+            clf.predict(temp)
+
+        # Input 2% of missing values per variable (base learner: XGBoost)
+        np.random.seed(0)
+        m = 0.02
+        for j in range(0, data.data.shape[1]):
+            sub = np.random.choice(data.data.shape[0], int(data.data.shape[0] * m))
+            temp = data.data
+            temp[sub, j] = np.nan
+
+        with warnings.catch_warnings():
+            clf = LCEClassifier(
+                n_estimators=3,
+                max_depth=50,
+                min_samples_leaf=1,
+                base_learner="xgboost",
                 random_state=0,
                 verbose=1,
             ).fit(temp, data.target)
@@ -205,13 +237,13 @@ class Test(unittest.TestCase):
         rng = np.random.RandomState(0)
         X, y = make_regression(n_samples, n_features, random_state=rng)
 
-        # Fit and predict  
+        # Fit and predict (base learner: CatBoost)
         with warnings.catch_warnings():
             reg = LCERegressor(
                 n_estimators=3,
                 max_depth=50,
                 min_samples_leaf=1,
-                base_learner="xgboost",
+                base_learner="catboost",
                 random_state=0,
                 verbose=1,
             ).fit(X, y)
@@ -228,12 +260,24 @@ class Test(unittest.TestCase):
                 verbose=1,
             ).fit(X, y)
             reg.predict(X)
+            
+        # Fit and predict (base learner: XGBoost)
+        with warnings.catch_warnings():
+            reg = LCERegressor(
+                n_estimators=3,
+                max_depth=50,
+                min_samples_leaf=1,
+                base_learner="xgboost",
+                random_state=0,
+                verbose=1,
+            ).fit(X, y)
+            reg.predict(X)
 
     def test_regressor_missing(self):
         # Load Diabetes dataset
         data = load_diabetes()
-
-        # Input 2% of missing values per variable (base learner: XGBoost)
+        
+        # Input 2% of missing values per variable (base learner: CatBoost)
         np.random.seed(0)
         m = 0.02
         for j in range(0, data.data.shape[1]):
@@ -246,7 +290,7 @@ class Test(unittest.TestCase):
                 n_estimators=3,
                 max_depth=50,
                 min_samples_leaf=1,
-                base_learner="xgboost",
+                base_learner="catboost",
                 random_state=0,
                 verbose=1,
             ).fit(temp, data.target)
@@ -266,6 +310,25 @@ class Test(unittest.TestCase):
                 max_depth=50,
                 min_samples_leaf=1,
                 base_learner="lightgbm",
+                random_state=0,
+                verbose=1,
+            ).fit(temp, data.target)
+            reg.predict(temp)
+
+        # Input 2% of missing values per variable (base learner: XGBoost)
+        np.random.seed(0)
+        m = 0.02
+        for j in range(0, data.data.shape[1]):
+            sub = np.random.choice(data.data.shape[0], int(data.data.shape[0] * m))
+            temp = data.data
+            temp[sub, j] = np.nan
+
+        with warnings.catch_warnings():
+            reg = LCERegressor(
+                n_estimators=3,
+                max_depth=50,
+                min_samples_leaf=1,
+                base_learner="xgboost",
                 random_state=0,
                 verbose=1,
             ).fit(temp, data.target)
