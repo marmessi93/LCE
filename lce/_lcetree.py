@@ -1141,8 +1141,11 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
             def _create_node(X, y, depth, container):
                 """Create a node in the tree."""
                 y_size = y.size
+                y_unique = np.unique(y)
+                y_unique_size = y_unique.size
+                
                 # Add base learner predictions as features to the dataset
-                if y_size > 1:
+                if y_unique_size > 1:
                     if self.base_learner=="catboost":
                         model_node = base_dict[self.base_learner](
                             X,
@@ -1220,7 +1223,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     "index": container["index_node_global"],
                     "model": model_node,
                     "data": (X, y),
-                    "y_size": y_size,
+                    "y_unique_size": y_unique_size,
                     "split": split,
                     "missing": {"missing": None, "missing_only": None},
                     "missing_side": None,
@@ -1339,8 +1342,11 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
             def _create_node_missing(X, y, depth, container):
                 """Create a node in the tree."""
                 y_size = y.size
+                y_unique = np.unique(y)
+                y_unique_size = y_unique.size
+                
                 # Add base learner predictions as features to the dataset
-                if y_size > 1:
+                if y_unique_size > 1:
                     if self.base_learner=="catboost":
                         model_node = base_dict[self.base_learner](
                             X,
@@ -1437,7 +1443,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                     "index": container["index_node_global"],
                     "model": model_node,
                     "data": (X, y),
-                    "y_size": y_size,
+                    "y_unique_size": y_unique_size,
                     "split": split,
                     "missing": {"missing": missing, "missing_only": missing_only},
                     "missing_side": None,
@@ -1617,7 +1623,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
         """
 
         def _base(node, X):
-            if node["y_size"] > 1:
+            if node["y_unique_size"] > 1:
                 y_pred = np.around(node["model"].predict(X[:, 1:]), 6)
                 X = np.column_stack((X, y_pred))
             else:
