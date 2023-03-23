@@ -2,7 +2,7 @@
 Citation
 #############
 
-LCE has been initially designed for a specific application in::
+Here are the reference papers. If you use LCE, we would appreciate citations.
 
 	@inproceedings{Fauvel-LCEKDD,
 	  author = {Fauvel, K. and V. Masson and E. Fromont and P. Faverdin and A. Termier},
@@ -11,8 +11,7 @@ LCE has been initially designed for a specific application in::
 	  year = {2019}
 	}
 	
-And then evaluated on the public UCI datasets in::
-
+	
 	@article{Fauvel-LCEDAMI,
 	  author = {Fauvel, K. and E. Fromont and V. Masson and P. Faverdin and A. Termier},
 	  title = {{XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification}},
@@ -23,4 +22,3 @@ And then evaluated on the public UCI datasets in::
 	  pages = {917-957}
 	}
 
-If you use LCE, we would appreciate citations.

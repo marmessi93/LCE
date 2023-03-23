@@ -1140,7 +1140,6 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
 
             def _create_node(X, y, depth, container):
                 """Create a node in the tree."""
-                y_size = y.size
                 y_unique = np.unique(y)
                 y_unique_size = y_unique.size
                 
@@ -1247,7 +1246,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                 stopping_criteria = [
                     depth >= 0,
                     depth < self.max_depth,
-                    X[:, 0].size > 1,
+                    np.unique(y).size > 1,
                 ]
 
                 if all(stopping_criteria):
@@ -1469,7 +1468,7 @@ class LCETreeRegressor(RegressorMixin, BaseEstimator):
                 stopping_criteria = [
                     depth >= 0,
                     depth < self.max_depth,
-                    X[:, 0].size > 1,
+                    np.unique(y).size > 1,
                     missing_only == False,
                 ]
 
