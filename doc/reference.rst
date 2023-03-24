@@ -2,7 +2,7 @@
 Citation
 #############
 
-Here are the reference papers. If you use LCE, we would appreciate citations.
+Here are the reference papers. If you use LCE, we would appreciate citations::
 
 	@inproceedings{Fauvel-LCEKDD,
 	  author = {Fauvel, K. and V. Masson and E. Fromont and P. Faverdin and A. Termier},
