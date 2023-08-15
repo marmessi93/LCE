@@ -10,6 +10,7 @@ Here are the reference papers. If you use LCE, we would appreciate citations::
 	  journal = {arXiv},
 	  year = {2023}
 	}
+	
 
 	@article{Fauvel-LCEDAMI,
 	  author = {Fauvel, K. and E. Fromont and V. Masson and P. Faverdin and A. Termier},
@@ -20,6 +21,7 @@ Here are the reference papers. If you use LCE, we would appreciate citations::
 	  number = {3},
 	  pages = {917-957}
 	}
+
 
 	@inproceedings{Fauvel-LCEKDD,
 	  author = {Fauvel, K. and V. Masson and E. Fromont and P. Faverdin and A. Termier},
