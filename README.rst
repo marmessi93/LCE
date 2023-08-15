@@ -107,9 +107,11 @@ Reference Papers
 LCE originated from a research at `Inria, France <https://www.inria.fr/en>`_. 
 Here are the reference papers:
 
-.. [1] Fauvel, K., V. Masson, E. Fromont, P. Faverdin and A. Termier. Towards Sustainable Dairy Management - A Machine Learning Enhanced Method for Estrus Detection. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, 2019
+.. [1] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. LCE: An Augmented Combination of Bagging and Boosting in Python. arXiv, 2023
 
 .. [2] Fauvel, K., E. Fromont, V. Masson, P. Faverdin and A. Termier. XEM: An Explainable-by-Design Ensemble Method for Multivariate Time Series Classification. Data Mining and Knowledge Discovery, 36(3):917–957, 2022
+
+.. [3] Fauvel, K., V. Masson, E. Fromont, P. Faverdin and A. Termier. Towards Sustainable Dairy Management - A Machine Learning Enhanced Method for Estrus Detection. In Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, 2019
 
 If you use LCE, we would appreciate citations.
 
