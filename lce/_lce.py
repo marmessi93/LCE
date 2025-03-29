@@ -394,7 +394,7 @@ class LCEClassifier(ClassifierMixin, BaseEstimator):
         self.encoder_.fit(self.classes_)
         self.base_estimator_ = self._generate_estimator()
         self.estimators_ = BaggingClassifier(
-            base_estimator=self.base_estimator_,
+            estimator=self.base_estimator_,
             n_estimators=self.n_estimators,
             bootstrap=self.bootstrap,
             max_samples=self.max_samples,
@@ -840,7 +840,7 @@ class LCERegressor(RegressorMixin, BaseEstimator):
         self.y_ = True
         self.base_estimator_ = self._generate_estimator()
         self.estimators_ = BaggingRegressor(
-            base_estimator=self.base_estimator_,
+            estimator=self.base_estimator_,
             n_estimators=self.n_estimators,
             bootstrap=self.bootstrap,
             max_samples=self.max_samples,
